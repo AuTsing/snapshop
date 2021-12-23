@@ -2,13 +2,18 @@ import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
 import Components from 'unplugin-vue-components/vite';
 import { AntDesignVueResolver } from 'unplugin-vue-components/resolvers';
+import { getThemeVariables } from 'ant-design-vue/dist/theme';
 
 // https://vitejs.dev/config/
 export default defineConfig({
     plugins: [
         vue(),
         Components({
-            resolvers: [AntDesignVueResolver()],
+            resolvers: [
+                AntDesignVueResolver({
+                    importStyle: 'less',
+                }),
+            ],
         }),
     ],
     build: {
@@ -21,6 +26,16 @@ export default defineConfig({
             output: {
                 inlineDynamicImports: true,
                 manualChunks: undefined,
+            },
+        },
+    },
+    css: {
+        preprocessorOptions: {
+            less: {
+                modifyVars: getThemeVariables({
+                    dark: true, // 开启暗黑模式
+                }),
+                javascriptEnabled: true,
             },
         },
     },

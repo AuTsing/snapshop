@@ -1,28 +1,26 @@
 <script setup lang="ts">
-import NavbarVue from './components/Navbar.vue';
+import PickerVue from './view/Picker.vue';
 </script>
 
 <template>
-    <div class="page">
-        <div class="header-and-content-container">
-            <NavbarVue></NavbarVue>
-        </div>
-    </div>
+    <a-row class="screen" :wrap="false">
+        <a-col class="nav" flex="0 0 50px">nav</a-col>
+        <a-col flex="1 1 auto">
+            <PickerVue />
+        </a-col>
+    </a-row>
 </template>
 
 <style>
 body {
     padding: 0;
+    margin: 0;
 }
-.page {
-    display: flex;
+.screen {
     width: 100vw;
     height: 100vh;
 }
-.header-and-content-container {
-    width: calc(100vw - 310px);
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
+.nav {
+    background-color: darkred;
 }
 </style>
