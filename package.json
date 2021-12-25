@@ -2,7 +2,7 @@
   "name": "snapshop",
   "version": "0.0.0",
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --host",
     "build": "vue-tsc --noEmit && vite build",
     "build:vscode": "vue-tsc --noEmit && vite build --config vite.config.for-vscode.ts",
     "preview": "vite preview"
@@ -10,7 +10,7 @@
   "dependencies": {
     "@ant-design/icons-vue": "^6.0.1",
     "@vueuse/core": "^7.4.1",
-    "ant-design-vue": "^3.0.0-alpha.16",
+    "ant-design-vue": "^3.0.0-beta.1",
     "jimp": "^0.16.1",
     "vue": "^3.2.25",
     "vuex": "^4.0.2"

@@ -11,36 +11,38 @@ const url =
 
 const store = useStore();
 
-const activeKey = ref<string>('blank');
+const activeKey = computed(() => store.state.capture.activeKey);
 const captures = computed(() => store.state.capture.captures);
 
-const handleTabsChange = () => {};
+const handleTabsChange = (key: string) => {
+    store.commit('setActiveKey', key);
+};
 
 const handleClickLoad = () => {
     store.dispatch('addCaptureFromUrl', url).then((key: string) => {
-        activeKey.value = key;
+        store.commit('setActiveKey', key);
     });
 };
 const handleClickRotate = () => {};
 const handleClickClose = () => {
-    const index = store.getters.activeIndex(activeKey.value);
+    const index = store.getters.activeIndex;
     store.commit('removeCapture', activeKey.value);
     if (captures.value[index]) {
-        activeKey.value = captures.value[index].key;
+        store.commit('setActiveKey', captures.value[index].key);
     } else if (captures.value[index - 1]) {
-        activeKey.value = captures.value[index - 1].key;
+        store.commit('setActiveKey', captures.value[index - 1].key);
     } else {
-        activeKey.value = 'blank';
+        store.commit('setActiveKey', 'blank');
     }
 };
 const handleClickCloseAll = () => {
     store.commit('removeCapture');
-    activeKey.value = 'blank';
+    store.commit('setActiveKey', 'blank');
 };
 </script>
 
 <template>
-    <a-tabs class="tabs" v-model:activeKey="activeKey">
+    <a-tabs class="tabs" :activeKey="activeKey" @change="handleTabsChange">
         <a-tab-pane v-if="captures.length === 0" key="blank" tab="起始页">
             <div class="empty-container">
                 <a-empty class="empty" :image="Empty.PRESENTED_IMAGE_SIMPLE" description="将图片拖入打开图片" />

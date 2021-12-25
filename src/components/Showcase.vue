@@ -1,23 +1,17 @@
 <script setup lang="ts">
-import { computed } from 'vue';
-import { useStore } from '../store';
+import { useDevicePixelRatio } from '@vueuse/core';
 
-const store = useStore();
+import RealtimeInfoVue from './RealtimeInfo.vue';
+import ZoomVue from './Zoom.vue';
 
-const x = computed(() => store.state.coordinate.x);
-const y = computed(() => store.state.coordinate.y);
+const { pixelRatio } = useDevicePixelRatio();
 </script>
 
 <template>
     <div class="showcase">
-        <a-row class="statistic-container">
-            <a-col :span="12">
-                <a-statistic title="坐标" :value="`${x},${y}`" />
-            </a-col>
-            <a-col :span="12">
-                <a-statistic title="颜色值" :value="`????????`" />
-            </a-col>
-        </a-row>
+        <ZoomVue />
+        <RealtimeInfoVue />
+        <div>{{ pixelRatio }}</div>
     </div>
 </template>
 
@@ -30,9 +24,5 @@ const y = computed(() => store.state.coordinate.y);
     padding-right: 20px;
     flex-direction: column;
     overflow-y: auto;
-}
-.statistic-container {
-    width: 100%;
-    padding: 16px;
 }
 </style>
