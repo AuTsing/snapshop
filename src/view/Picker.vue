@@ -46,6 +46,58 @@ onKeyStroke(
     },
     { target: refCanvas.value }
 );
+onKeyStroke(
+    ['1', '2', '3', '4', '5', '6', '7', '8', '9'],
+    e => {
+        e.preventDefault();
+        const x = store.state.coordinate.x;
+        const y = store.state.coordinate.y;
+        if (store.getters.xyLegal(x, y)) {
+            store.commit('addRecord', { x, y, c: store.getters.c, key: e.key });
+        }
+    },
+    { target: refCanvas.value }
+);
+onKeyStroke(
+    ['q', 'Q'],
+    e => {
+        e.preventDefault();
+        const x = store.state.coordinate.x;
+        const y = store.state.coordinate.y;
+        if (store.getters.xyLegal(x, y)) {
+            store.commit('updateArea', { ...store.state.area, x1: x, y1: y });
+        }
+    },
+    { target: refCanvas.value }
+);
+onKeyStroke(
+    ['e', 'E'],
+    e => {
+        e.preventDefault();
+        const x = store.state.coordinate.x;
+        const y = store.state.coordinate.y;
+        if (store.getters.xyLegal(x, y)) {
+            store.commit('updateArea', { ...store.state.area, x2: x, y2: y });
+        }
+    },
+    { target: refCanvas.value }
+);
+onKeyStroke(
+    ['z', 'Z'],
+    e => {
+        e.preventDefault();
+        store.commit('removeRecord');
+    },
+    { target: refCanvas.value }
+);
+onKeyStroke(
+    ['x', 'X'],
+    e => {
+        e.preventDefault();
+        store.commit('resetArea');
+    },
+    { target: refCanvas.value }
+);
 </script>
 
 <template>
@@ -53,7 +105,7 @@ onKeyStroke(
         <a-col class="canvas" flex="1 0 300px">
             <CanvasVue ref="refCanvas" />
         </a-col>
-        <a-col class="info" flex="0 0 314px">
+        <a-col flex="0 0 294px">
             <ShowcaseVue />
         </a-col>
     </a-row>
@@ -66,8 +118,5 @@ onKeyStroke(
 .canvas {
     width: 0;
     height: 100%;
-}
-.info {
-    background: blue;
 }
 </style>

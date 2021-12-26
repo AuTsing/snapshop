@@ -31,7 +31,7 @@ watch(zoomCaptureBase64Promise, async () => {
     position: relative;
     height: 294px;
     width: 294px;
-    background-color: antiquewhite;
+    flex: 0 0 auto;
 }
 .zoom-cursor {
     position: absolute;

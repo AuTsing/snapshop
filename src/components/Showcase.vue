@@ -3,6 +3,7 @@ import { useDevicePixelRatio } from '@vueuse/core';
 
 import RealtimeInfoVue from './RealtimeInfo.vue';
 import ZoomVue from './Zoom.vue';
+import RecordListVue from './RecordList.vue';
 
 const { pixelRatio } = useDevicePixelRatio();
 </script>
@@ -11,18 +12,18 @@ const { pixelRatio } = useDevicePixelRatio();
     <div class="showcase">
         <ZoomVue />
         <RealtimeInfoVue />
-        <div>{{ pixelRatio }}</div>
+        <RecordListVue />
     </div>
 </template>
 
 <style scoped>
 .showcase {
-    background-color: darkslateblue;
+    background-color: #1f1f1f;
     display: flex;
     height: 100%;
     width: 100%;
     padding-right: 20px;
     flex-direction: column;
-    overflow-y: auto;
+    overflow-y: overlay;
 }
 </style>

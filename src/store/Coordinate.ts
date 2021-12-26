@@ -22,7 +22,9 @@ const Coordinate: Module<ICoordinateState, IRootState> = {
                 return `0x`;
             }
         },
-        xyLegal: (_state, _getters, _rootState, rootGetters) => (x: number, y: number) => {
+        xyLegal: (state, _getters, _rootState, rootGetters) => (x?: number, y?: number) => {
+            x = x ?? state.x;
+            y = y ?? state.y;
             if (x < 0 || y < 0) {
                 return false;
             } else {
