@@ -1,12 +1,14 @@
 <script setup lang="ts">
-import PickerVue from './view/Picker.vue';
+import NavbarVue from './components/Navbar.vue';
 </script>
 
 <template>
     <a-row class="screen" :wrap="false">
-        <a-col class="nav" flex="0 0 50px">nav</a-col>
+        <a-col>
+            <NavbarVue />
+        </a-col>
         <a-col flex="1 1 auto">
-            <PickerVue />
+            <router-view></router-view>
         </a-col>
     </a-row>
 </template>

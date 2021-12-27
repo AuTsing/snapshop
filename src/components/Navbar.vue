@@ -1,28 +1,26 @@
 <script setup lang="ts">
 import { ref } from 'vue';
+import { views } from '../router';
 
-const captureLoading = ref<boolean>(false);
+const collapsed = ref<boolean>(true);
+const selectedKeys = ref<string[]>([views[0].key]);
 </script>
 
 <template>
-    <div class="header-container">
-        <a-space :size="10">
-            <a-button type="primary" size="large" @click="() => null" :loading="captureLoading" :disabled="captureLoading">加载图片</a-button>
-            <a-button type="primary" size="large" @click="() => null" :loading="captureLoading" :disabled="captureLoading">图片比较器</a-button>
-            <a-button type="primary" size="large" @click="() => null" :loading="captureLoading" :disabled="captureLoading">制作字库</a-button>
-            <a-button type="primary" size="large" @click="() => null" :loading="captureLoading" :disabled="captureLoading">生成代码</a-button>
-            <a-button type="primary" size="large" @click="() => null" :loading="captureLoading" :disabled="captureLoading">设置</a-button>
-        </a-space>
-    </div>
+    <a-layout-sider class="menu" v-model:collapsed="collapsed" collapsible collapsedWidth="48px">
+        <a-menu v-model:selectedKeys="selectedKeys">
+            <a-menu-item v-for="view in views" :key="view.key">
+                <router-link :to="'/' + view.key">
+                    <component :is="view.icon" />
+                    <span>{{ view.title }}</span>
+                </router-link>
+            </a-menu-item>
+        </a-menu>
+    </a-layout-sider>
 </template>
 
 <style scoped>
-.header-container {
-    background-color: #1f1f1f;
-    height: 64px;
-    display: flex;
-    align-items: center;
-    overflow: auto;
-    padding: 0 10px;
+.menu {
+    height: 100%;
 }
 </style>
