@@ -1,15 +1,42 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
 import { useStore } from '../store';
-import { promiseTimeout } from '@vueuse/core';
+import Jimp from 'jimp/browser/lib/jimp';
+
+const defaultPreview =
+    'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAANSURBVBhXY2BgYGAAAAAFAAGKM+MAAAAAAElFTkSuQmCC';
+const zoomRadius = 10;
+const zoomSideLength = zoomRadius * 2 + 1;
+const zoomDisplayRatio = 14;
+const zoomSideLengthDisplay = zoomSideLength * zoomDisplayRatio;
 
 const store = useStore();
 
 const zoomCaptureBase64 = ref<string>('');
-const zoomCaptureBase64Promise = computed(() => store.getters.zoomCaptureBase64);
+const x = computed(() => store.state.coordinate.x);
+const y = computed(() => store.state.coordinate.y);
 
-watch(zoomCaptureBase64Promise, async () => {
-    zoomCaptureBase64.value = await zoomCaptureBase64Promise.value;
+watch([x, y], async () => {
+    const activeJimp = store.getters.activeJimp;
+    const x0 = store.state.coordinate.x;
+    const y0 = store.state.coordinate.y;
+    if (activeJimp && x0 > -1 && y0 > -1) {
+        const jimp = new Jimp(zoomSideLength, zoomSideLength, 0);
+        for (let i = -zoomRadius; i <= zoomRadius; ++i) {
+            for (let j = -zoomRadius; j <= zoomRadius; ++j) {
+                const xx = i + x0;
+                const yy = j + y0;
+                if (xx >= 0 && xx < activeJimp.bitmap.width && yy >= 0 && yy < activeJimp.bitmap.height) {
+                    jimp.setPixelColor(activeJimp.getPixelColor(xx, yy), i + 10, j + 10);
+                }
+            }
+        }
+        const resizedJimp = jimp.resize(zoomSideLengthDisplay, zoomSideLengthDisplay, Jimp.RESIZE_NEAREST_NEIGHBOR);
+        const base64 = await resizedJimp.getBase64Async(Jimp.MIME_PNG);
+        zoomCaptureBase64.value = base64;
+    } else {
+        zoomCaptureBase64.value = defaultPreview;
+    }
 });
 </script>
 

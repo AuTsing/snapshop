@@ -15,13 +15,6 @@ export interface ICapture {
     base64: string;
 }
 
-const defaultPreview =
-    'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAANSURBVBhXY2BgYGAAAAAFAAGKM+MAAAAAAElFTkSuQmCC';
-const zoomRadius = 10;
-const zoomSideLength = zoomRadius * 2 + 1;
-const zoomDisplayRatio = 14;
-const zoomSideLengthDisplay = zoomSideLength * zoomDisplayRatio;
-
 const Capture: Module<ICaptureState, IRootState> = {
     state: {
         tabIndex: 1,
@@ -34,28 +27,6 @@ const Capture: Module<ICaptureState, IRootState> = {
         },
         activeJimp: state => {
             return state.captures.find(capture => capture.key === state.activeKey)?.jimp;
-        },
-        zoomCaptureBase64: async (_state, getters, rootState, _rootGetters) => {
-            const activeJimp = getters.activeJimp;
-            const x0 = rootState.coordinate.x;
-            const y0 = rootState.coordinate.y;
-            if (activeJimp && x0 > -1 && y0 > -1) {
-                const jimp = new Jimp(zoomSideLength, zoomSideLength, 0);
-                for (let i = -zoomRadius; i <= zoomRadius; ++i) {
-                    for (let j = -zoomRadius; j <= zoomRadius; ++j) {
-                        const xx = i + x0;
-                        const yy = j + y0;
-                        if (xx >= 0 && xx < activeJimp.bitmap.width && yy >= 0 && yy < activeJimp.bitmap.height) {
-                            jimp.setPixelColor(activeJimp.getPixelColor(xx, yy), i + 10, j + 10);
-                        }
-                    }
-                }
-                const resizedJimp = jimp.resize(zoomSideLengthDisplay, zoomSideLengthDisplay, Jimp.RESIZE_NEAREST_NEIGHBOR);
-                const base64 = await resizedJimp.getBase64Async(Jimp.MIME_PNG);
-                return base64;
-            } else {
-                return defaultPreview;
-            }
         },
     },
     mutations: {
