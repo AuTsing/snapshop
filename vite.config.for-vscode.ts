@@ -4,7 +4,6 @@ import Components from 'unplugin-vue-components/vite';
 import { AntDesignVueResolver } from 'unplugin-vue-components/resolvers';
 import { getThemeVariables } from 'ant-design-vue/dist/theme';
 
-// https://vitejs.dev/config/
 export default defineConfig({
     plugins: [
         vue(),
@@ -35,6 +34,11 @@ export default defineConfig({
                 }),
                 javascriptEnabled: true,
             },
+        },
+    },
+    resolve: {
+        alias: {
+            'jimp/browser/lib/jimp': 'jimp',
         },
     },
 });
