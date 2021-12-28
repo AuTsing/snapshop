@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { useDevicePixelRatio } from '@vueuse/core';
+import { useDevicePixelRatio, useClipboard } from '@vueuse/core';
 
 import RealtimeInfoVue from './RealtimeInfo.vue';
 import ZoomVue from './Zoom.vue';
 import RecordListVue from './RecordList.vue';
 
 const { pixelRatio } = useDevicePixelRatio();
+const { isSupported } = useClipboard();
 </script>
 
 <template>
@@ -13,6 +14,7 @@ const { pixelRatio } = useDevicePixelRatio();
         <ZoomVue />
         <RealtimeInfoVue />
         <RecordListVue />
+        {{ isSupported }}
     </div>
 </template>
 
