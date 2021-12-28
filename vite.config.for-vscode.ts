@@ -36,9 +36,4 @@ export default defineConfig({
             },
         },
     },
-    resolve: {
-        alias: {
-            'jimp/browser/lib/jimp': 'jimp',
-        },
-    },
 });
