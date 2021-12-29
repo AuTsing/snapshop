@@ -55,5 +55,7 @@ watchEffect(() => {
 .img-content {
     position: absolute;
     z-index: 1;
+    max-width: none;
+    max-height: none;
 }
 </style>

@@ -53,7 +53,7 @@ const handleClickCloseAll = () => {
         </a-tab-pane>
         <template #leftExtra>
             <a-tooltip title="加载图片">
-                <a-button type="text" @click="handleClickLoad">
+                <a-button class="load-button" type="text" @click="handleClickLoad">
                     <template #icon><PlusCircleOutlined /></template>
                 </a-button>
             </a-tooltip>
@@ -88,6 +88,10 @@ const handleClickCloseAll = () => {
     width: 100%;
     justify-content: center;
     align-items: center;
+}
+.load-button {
+    height: 46px;
+    width: 46px;
 }
 :deep(.ant-tabs-nav) {
     margin: 0;

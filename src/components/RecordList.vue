@@ -2,10 +2,12 @@
 import { computed } from 'vue';
 import { useStore } from '../store';
 import { IRecord } from '../store/Record';
+import { useControlCv } from '../plugins/ControlCv';
 
 import { CopyOutlined, DeleteOutlined } from '@ant-design/icons-vue';
 
 const store = useStore();
+const controlCv = useControlCv();
 
 const pointsColumns = [
     { title: '坐标', dataIndex: 'xy', width: '33%', align: 'center' },
@@ -27,11 +29,15 @@ const areas = computed(() => {
     }
 });
 
-const handleClickCopyRecord = (record: IRecord) => {};
+const handleClickCopyRecord = (record: IRecord) => {
+    controlCv.ctrlC(`${record.x},${record.y},${record.c}`);
+};
 const handleClickRemoveRecord = (record: IRecord) => {
     store.commit('removeRecord', record.key);
 };
-const handleClickCopyArea = () => {};
+const handleClickCopyArea = (record: { x1: number; y1: number; x2: number; y2: number }) => {
+    controlCv.ctrlC(`${record.x1},${record.y1},${record.x2},${record.y2}`);
+};
 const handleClickResetArea = () => {
     store.commit('resetArea');
 };
@@ -64,7 +70,7 @@ const handleClickResetArea = () => {
             </template>
             <template v-if="column.dataIndex === 'action'">
                 <a-space>
-                    <CopyOutlined @click="handleClickCopyArea" />
+                    <CopyOutlined @click="() => handleClickCopyArea(record)" />
                     <DeleteOutlined @click="handleClickResetArea" />
                 </a-space>
             </template>
