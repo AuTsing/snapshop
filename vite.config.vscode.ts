@@ -4,11 +4,12 @@ import Components from 'unplugin-vue-components/vite';
 import { AntDesignVueResolver } from 'unplugin-vue-components/resolvers';
 import { getThemeVariables } from 'ant-design-vue/dist/theme';
 
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
     plugins: [
         vue(),
         Components({
             resolvers: [AntDesignVueResolver({ importStyle: 'less' })],
+            directoryAsNamespace: true,
         }),
     ],
     build: {
@@ -25,6 +26,7 @@ export default defineConfig({
                 manualChunks: undefined,
             },
         },
+        watch: mode === 'development' ? {} : null,
     },
     css: {
         preprocessorOptions: {
@@ -36,4 +38,4 @@ export default defineConfig({
             },
         },
     },
-});
+}));
