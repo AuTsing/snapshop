@@ -32,7 +32,7 @@ export const store = createStore<IRootState>({
         record: Record,
         area: Area,
     },
-    plugins: [actionPlugin],
+    // plugins: [mutationPlugin],
 });
 
 export function useStore() {
