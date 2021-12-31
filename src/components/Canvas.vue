@@ -2,7 +2,7 @@
 import { computed, ref } from 'vue';
 import { useStore } from '../store';
 
-import { PlusCircleOutlined, CloseCircleOutlined, MinusCircleOutlined, RotateRightOutlined } from '@ant-design/icons-vue';
+import { PlusCircleOutlined, CloseCircleOutlined, MinusCircleOutlined, RotateRightOutlined, LoadingOutlined } from '@ant-design/icons-vue';
 import { Empty, message } from 'ant-design-vue';
 import PictureVue from './Picture.vue';
 
@@ -22,7 +22,7 @@ const handleTabsChange = (key: string) => {
 
 const handleClickLoad = async () => {
     store.commit('setCaptureLoading', true);
-    const key = await store.dispatch('addCaptureFromUrl', url);
+    const key = await store.dispatch('addCaptureFromLink', url);
     store.commit('setActiveKey', key);
     store.commit('setCaptureLoading', false);
 };
@@ -47,20 +47,24 @@ const handleClickCloseAll = () => {
     store.commit('setActiveKey', 'blank');
 };
 const handleDragEnter = (e: DragEvent) => {
+    e.stopPropagation();
     e.preventDefault();
     dragingTarget = e.target;
     store.commit('setCaptureLoading', true);
 };
 const handleDragOver = (e: DragEvent) => {
+    e.stopPropagation();
     e.preventDefault();
 };
 const handleDragLeave = (e: DragEvent) => {
+    e.stopPropagation();
     e.preventDefault();
     if (dragingTarget === e.target) {
         store.commit('setCaptureLoading', false);
     }
 };
-const handleDrop = (e: DragEvent) => {
+const handleDrop = async (e: DragEvent) => {
+    e.stopPropagation();
     e.preventDefault();
     try {
         if (!e.dataTransfer) {
@@ -74,7 +78,10 @@ const handleDrop = (e: DragEvent) => {
         if (exts.some(ext => ext !== 'image/png')) {
             throw new Error('不支持的格式');
         }
-        console.log(fileList);
+        for (const file of fileList) {
+            const key = await store.dispatch('addCaptureFromFile', file);
+            store.commit('setActiveKey', key);
+        }
     } catch (error) {
         if (error instanceof Error) {
             message.error('打开图片失败: ' + error.message);
@@ -121,6 +128,9 @@ const handleDrop = (e: DragEvent) => {
                     </a-tooltip>
                 </template>
             </a-tabs>
+            <template #indicator>
+                <LoadingOutlined :style="{ fontSize: '24px' }" />
+            </template>
         </a-spin>
     </div>
 </template>
@@ -158,5 +168,8 @@ const handleDrop = (e: DragEvent) => {
 }
 :deep(.ant-spin-container) {
     height: 100%;
+}
+:deep(.ant-spin-dot) {
+    margin: -12px !important;
 }
 </style>

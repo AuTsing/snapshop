@@ -16,6 +16,17 @@ export interface ICapture {
     base64: string;
 }
 
+export function readFileSync(file: File): Promise<ArrayBuffer> {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+            resolve(reader.result as ArrayBuffer);
+        };
+        reader.onerror = reject;
+        reader.readAsArrayBuffer(file);
+    });
+}
+
 const Capture: Module<ICaptureState, IRootState> = {
     state: {
         tabIndex: 1,
@@ -58,9 +69,7 @@ const Capture: Module<ICaptureState, IRootState> = {
         },
     },
     actions: {
-        addCaptureFromUrl: async ({ state, commit }, url: string) => {
-            const jimp = await Jimp.read(url);
-            const base64 = await jimp.getBase64Async(Jimp.MIME_PNG);
+        addCapture: ({ state, commit }, { jimp, base64 }: { jimp: Jimp; base64: string }) => {
             const capture: ICapture = {
                 key: `tab${state.tabIndex}`,
                 title: `图片${state.tabIndex}`,
@@ -68,6 +77,19 @@ const Capture: Module<ICaptureState, IRootState> = {
                 base64: base64,
             };
             commit('addCapture', capture);
+            return capture;
+        },
+        addCaptureFromLink: async ({ dispatch }, link: string) => {
+            const jimp = await Jimp.read(link);
+            const base64 = await jimp.getBase64Async(Jimp.MIME_PNG);
+            const capture = await dispatch('addCapture', { jimp, base64 });
+            return capture.key;
+        },
+        addCaptureFromFile: async ({ dispatch }, file: File) => {
+            const buffer = await readFileSync(file);
+            const jimp = await Jimp.read(Buffer.from(buffer));
+            const base64 = await jimp.getBase64Async(Jimp.MIME_PNG);
+            const capture = await dispatch('addCapture', { jimp, base64 });
             return capture.key;
         },
         rotateCapture: async ({ commit, getters }) => {
