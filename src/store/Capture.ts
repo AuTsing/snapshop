@@ -1,6 +1,7 @@
-import { Module, GetterTree } from 'vuex';
+import { Module } from 'vuex';
 import { IRootState } from '.';
 import Jimp from 'jimp/browser/lib/jimp';
+import { message } from 'ant-design-vue';
 
 export interface ICaptureState {
     tabIndex: number;
@@ -79,11 +80,20 @@ const Capture: Module<ICaptureState, IRootState> = {
             commit('addCapture', capture);
             return capture;
         },
-        addCaptureFromLink: async ({ dispatch }, link: string) => {
-            const jimp = await Jimp.read(link);
-            const base64 = await jimp.getBase64Async(Jimp.MIME_PNG);
-            const capture = await dispatch('addCapture', { jimp, base64 });
-            return capture.key;
+        addCaptureFromLink: async ({ state, dispatch }, link: string) => {
+            try {
+                const jimp = await Jimp.read(link);
+                const base64 = await jimp.getBase64Async(Jimp.MIME_PNG);
+                const capture = await dispatch('addCapture', { jimp, base64 });
+                return capture.key;
+            } catch (error) {
+                if (error instanceof Error) {
+                    message.error('加载图片失败: ' + error.message);
+                } else {
+                    message.error('加载图片失败: 未知错误');
+                }
+                return state.activeKey;
+            }
         },
         addCaptureFromFile: async ({ dispatch }, file: File) => {
             const buffer = await readFileSync(file);

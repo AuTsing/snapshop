@@ -22,7 +22,7 @@ const handleTabsChange = (key: string) => {
 
 const handleClickLoad = async () => {
     store.commit('setCaptureLoading', true);
-    const key = await store.dispatch('addCaptureFromLink', url);
+    const key = await store.dispatch('addCaptureFromLink', store.state.configuration.link);
     store.commit('setActiveKey', key);
     store.commit('setCaptureLoading', false);
 };

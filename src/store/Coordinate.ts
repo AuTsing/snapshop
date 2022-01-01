@@ -13,7 +13,7 @@ const Coordinate: Module<ICoordinateState, IRootState> = {
         y: -1,
     },
     getters: {
-        c: (state, getters, rootState, rootGetters) => {
+        c: (state, _getters, _rootState, rootGetters) => {
             if (state.x > -1 && state.y > -1) {
                 const jimp: Jimp = rootGetters.activeJimp;
                 const c = `0x` + `000000${jimp.getPixelColor(state.x, state.y).toString(16).slice(0, -2)}`.slice(-6);
