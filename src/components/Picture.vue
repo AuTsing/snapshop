@@ -17,7 +17,7 @@ const isHovered = useElementHover(refImgContent);
 
 const handleClickImg = () => {
     if (store.getters.xyLegal()) {
-        store.commit('addRecord', { x: store.state.coordinate.x, y: store.state.coordinate.y, c: store.getters.c });
+        store.commit('addRecord', { x: store.state.coordinate.x, y: store.state.coordinate.y, c: store.getters.c(), cNative: store.getters.cNative });
     }
 };
 

@@ -2,6 +2,14 @@ import { Module } from 'vuex';
 import { IRootState } from '.';
 import { useStorage } from '@vueuse/core';
 
+export enum ColorMode {
+    dec = '十进制',
+    hex = '十六进制',
+    hexWith0x = '0x前缀十六进制',
+    hexWithPound = '#前缀十六进制',
+    rgb = 'RGB',
+}
+
 export enum LoadCaptureMode {
     fromLink = '从链接加载',
     fromHttpApi = '从HttpAPI加载',
@@ -11,26 +19,29 @@ export interface IConfigurationState {
     loadCaptureMode: LoadCaptureMode;
     link: string;
     httpApi: string;
-    [key: string]: any;
+    colorMode: ColorMode;
 }
 
 export const defaultConfiguration: IConfigurationState = {
     loadCaptureMode: LoadCaptureMode.fromLink,
     link: '',
     httpApi: '',
+    colorMode: ColorMode.dec,
 };
 
 const state = useStorage('configuration', defaultConfiguration);
 const Configuration: Module<IConfigurationState, IRootState> = {
-    state: () => state.value,
+    state: () => {
+        Object.assign(defaultConfiguration, state.value);
+        Object.assign(state.value, defaultConfiguration);
+        return state.value;
+    },
     mutations: {
-        setConfiguration: (state, { key, value }: { key: string; value: any }) => {
+        setConfiguration: <T extends keyof IConfigurationState>(state: IConfigurationState, { key, value }: { key: T; value: IConfigurationState[T] }) => {
             state[key] = value;
         },
         resetConfiguration: state => {
-            for (const [key, value] of Object.entries(defaultConfiguration)) {
-                state[key] = value;
-            }
+            Object.assign(state, defaultConfiguration);
         },
     },
 };

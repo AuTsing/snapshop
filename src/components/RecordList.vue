@@ -50,7 +50,7 @@ const handleClickResetArea = () => {
                 {{ `${record.x},${record.y}` }}
             </template>
             <template v-if="column.dataIndex === 'c'">
-                <a-tag class="tag" :color="`#${record.c.slice(2)}`">{{ record.c }}</a-tag>
+                <a-tag class="tag" :color="'#' + `000000${record.cNative.toString(16).slice(0, -2)}`.slice(-6)">{{ record.c }}</a-tag>
             </template>
             <template v-if="column.dataIndex === 'action'">
                 <a-space>

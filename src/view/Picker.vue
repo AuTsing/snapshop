@@ -53,7 +53,7 @@ onKeyStroke(
         const x = store.state.coordinate.x;
         const y = store.state.coordinate.y;
         if (store.getters.xyLegal(x, y)) {
-            store.commit('addRecord', { x, y, c: store.getters.c, key: e.key });
+            store.commit('addRecord', { x, y, c: store.getters.c(), cNative: store.getters.cNative, key: e.key });
         }
     },
     { target: refCanvas.value }

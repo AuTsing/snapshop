@@ -1,6 +1,7 @@
 import { Module } from 'vuex';
 import { IRootState } from '.';
 import Jimp from 'jimp/browser/lib/jimp';
+import { ColorMode } from './Configuration';
 
 export interface ICoordinateState {
     x: number;
@@ -13,13 +14,34 @@ const Coordinate: Module<ICoordinateState, IRootState> = {
         y: -1,
     },
     getters: {
-        c: (state, _getters, _rootState, rootGetters) => {
+        c:
+            (_state, getters, rootState, _rootGetters) =>
+            (display: ColorMode = rootState.configuration.colorMode) => {
+                const cNative: number = getters.cNative;
+                if (cNative === -1) {
+                    return '-1';
+                }
+                switch (display) {
+                    case ColorMode.dec:
+                        return cNative.toString();
+                    case ColorMode.hex:
+                        return `000000${cNative.toString(16).slice(0, -2)}`.slice(-6);
+                    case ColorMode.hexWith0x:
+                        return '0x' + `000000${cNative.toString(16).slice(0, -2)}`.slice(-6);
+                    case ColorMode.hexWithPound:
+                        return '#' + `000000${cNative.toString(16).slice(0, -2)}`.slice(-6);
+                    case ColorMode.rgb:
+                        const rgba = Jimp.intToRGBA(cNative);
+                        return `${rgba.r},${rgba.g},${rgba.b}`;
+                }
+            },
+        cNative: (state, _getters, _rootState, rootGetters) => {
             if (state.x > -1 && state.y > -1) {
                 const jimp: Jimp = rootGetters.activeJimp;
-                const c = `0x` + `000000${jimp.getPixelColor(state.x, state.y).toString(16).slice(0, -2)}`.slice(-6);
+                const c = jimp.getPixelColor(state.x, state.y);
                 return c;
             } else {
-                return `0x`;
+                return -1;
             }
         },
         xyLegal: (state, _getters, _rootState, rootGetters) => (x?: number, y?: number) => {

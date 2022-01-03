@@ -6,8 +6,7 @@ const store = useStore();
 
 const x = computed(() => store.state.coordinate.x);
 const y = computed(() => store.state.coordinate.y);
-const c = computed(() => store.getters.c);
-
+const c = computed(() => store.getters.c());
 </script>
 
 <template>
