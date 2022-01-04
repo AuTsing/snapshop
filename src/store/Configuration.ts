@@ -26,14 +26,15 @@ export const defaultConfiguration: IConfigurationState = {
     loadCaptureMode: LoadCaptureMode.fromLink,
     link: '',
     httpApi: '',
-    colorMode: ColorMode.dec,
+    colorMode: ColorMode.hexWith0x,
 };
 
 const state = useStorage('configuration', defaultConfiguration);
 const Configuration: Module<IConfigurationState, IRootState> = {
     state: () => {
-        Object.assign(defaultConfiguration, state.value);
-        Object.assign(state.value, defaultConfiguration);
+        const defaultConfigurationCopy = Object.assign({}, defaultConfiguration);
+        Object.assign(defaultConfigurationCopy, state.value);
+        Object.assign(state.value, defaultConfigurationCopy);
         return state.value;
     },
     mutations: {

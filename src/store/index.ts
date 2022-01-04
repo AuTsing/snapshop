@@ -5,6 +5,7 @@ import Capture, { ICaptureState } from './Capture';
 import Record, { IRecordState } from './Record';
 import Area, { IAreaState } from './Area';
 import Configuration, { IConfigurationState } from './Configuration';
+import Code, { ICodeState } from './Code';
 
 export interface IRootState {
     coordinate: ICoordinateState;
@@ -12,6 +13,7 @@ export interface IRootState {
     record: IRecordState;
     area: IAreaState;
     configuration: IConfigurationState;
+    code: ICodeState;
 }
 
 export const key: InjectionKey<Store<IRootState>> = Symbol();
@@ -34,8 +36,9 @@ export const store = createStore<IRootState>({
         record: Record,
         area: Area,
         configuration: Configuration,
+        code: Code,
     },
-    // plugins: [mutationPlugin],
+    plugins: [mutationPlugin],
 });
 
 export function useStore() {

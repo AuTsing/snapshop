@@ -2,17 +2,13 @@
 import { reactive, toRaw, watch } from 'vue';
 import { useStore } from '../store';
 import { debouncedWatch } from '@vueuse/core';
-import { Form, message } from 'ant-design-vue';
-import { defaultConfiguration, IConfigurationState } from '../store/Configuration';
-import { LoadCaptureMode, ColorMode } from '../store/Configuration';
-
-const { useForm } = Form;
+import { message } from 'ant-design-vue';
+import { defaultConfiguration, IConfigurationState, LoadCaptureMode, ColorMode } from '../store/Configuration';
+import ResetButtonVue from '../shared/ResetButton.vue';
 
 const store = useStore();
 
 const configurationModelRef = reactive<IConfigurationState>(Object.assign({}, store.state.configuration));
-const configurationRulesRef = reactive({});
-const { resetFields, validate } = useForm(configurationModelRef);
 
 const handleClickResetConfiguration = () => {
     Object.assign(configurationModelRef, defaultConfiguration);
@@ -50,8 +46,10 @@ debouncedWatch(
                 <a-select-option v-for="option in ColorMode" :value="option">{{ option }}</a-select-option>
             </a-select>
         </a-form-item>
+        <a-form-item>
+            <ResetButtonVue :handleClick="handleClickResetConfiguration" />
+        </a-form-item>
     </a-form>
-    <a-button :style="{ margin: '0 16px' }" @click="handleClickResetConfiguration">RESET</a-button>
 </template>
 
 <style scoped></style>
