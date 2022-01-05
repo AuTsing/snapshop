@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, computed, onMounted, watchEffect } from 'vue';
+import { ref, watchEffect } from 'vue';
 import { useMouseInElement, pausableWatch, useElementHover, onKeyStroke } from '@vueuse/core';
 import { useStore } from '../store';
 
@@ -12,7 +12,7 @@ const { base64 } = defineProps({
 const imgCover = ref<string | undefined>();
 const refImgContent = ref();
 
-const { x, y, elementX, elementY } = useMouseInElement(refImgContent);
+const { elementX, elementY } = useMouseInElement(refImgContent);
 const isHovered = useElementHover(refImgContent);
 
 const handleClickImg = () => {
@@ -22,7 +22,7 @@ const handleClickImg = () => {
 };
 
 const { pause, resume } = pausableWatch([elementX, elementY], () => {
-    store.commit('updateCoordinate', { x: elementX.value, y: elementY.value });
+    store.commit('updateCoordinate', { x: Math.round(elementX.value), y: Math.round(elementY.value) });
 });
 watchEffect(() => {
     if (isHovered.value) {

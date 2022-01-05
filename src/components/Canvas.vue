@@ -109,37 +109,41 @@ const handleDrop = async (e: DragEvent) => {
                     <PictureVue :base64="capture.base64"></PictureVue>
                 </a-tab-pane>
                 <template #leftExtra>
-                    <a-tooltip title="远程加载图片">
-                        <a-button type="text" @click="handleClickLoad">
-                            <template #icon><CloudDownloadOutlined /></template>
-                        </a-button>
-                    </a-tooltip>
-                    <OpenerVue>
-                        <template #default>
-                            <a-tooltip title="本地加载图片">
-                                <a-button type="text">
-                                    <template #icon><FolderOpenOutlined /></template>
-                                </a-button>
-                            </a-tooltip>
-                        </template>
-                    </OpenerVue>
+                    <div :style="{ margin: '0 7px' }">
+                        <a-tooltip title="远程加载图片">
+                            <a-button type="text" @click="handleClickLoad">
+                                <template #icon><CloudDownloadOutlined /></template>
+                            </a-button>
+                        </a-tooltip>
+                        <OpenerVue>
+                            <template #default>
+                                <a-tooltip title="本地加载图片">
+                                    <a-button type="text">
+                                        <template #icon><FolderOpenOutlined /></template>
+                                    </a-button>
+                                </a-tooltip>
+                            </template>
+                        </OpenerVue>
+                    </div>
                 </template>
                 <template v-if="captures.length !== 0" #rightExtra>
-                    <a-tooltip title="顺时针旋转90°">
-                        <a-button type="text" @click="handleClickRotate">
-                            <template #icon><RotateRightOutlined /></template>
-                        </a-button>
-                    </a-tooltip>
-                    <a-tooltip title="关闭页面">
-                        <a-button type="text" @click="handleClickClose">
-                            <template #icon><MinusCircleOutlined /></template>
-                        </a-button>
-                    </a-tooltip>
-                    <a-tooltip title="关闭所有页面">
-                        <a-button type="text" @click="handleClickCloseAll">
-                            <template #icon><CloseCircleOutlined /></template>
-                        </a-button>
-                    </a-tooltip>
+                    <div :style="{ margin: '0 7px' }">
+                        <a-tooltip title="顺时针旋转90°">
+                            <a-button type="text" @click="handleClickRotate">
+                                <template #icon><RotateRightOutlined /></template>
+                            </a-button>
+                        </a-tooltip>
+                        <a-tooltip title="关闭页面">
+                            <a-button type="text" @click="handleClickClose">
+                                <template #icon><MinusCircleOutlined /></template>
+                            </a-button>
+                        </a-tooltip>
+                        <a-tooltip title="关闭所有页面">
+                            <a-button type="text" @click="handleClickCloseAll">
+                                <template #icon><CloseCircleOutlined /></template>
+                            </a-button>
+                        </a-tooltip>
+                    </div>
                 </template>
             </a-tabs>
             <template #indicator>
