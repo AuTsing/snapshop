@@ -8,6 +8,7 @@ const selectedKeys = ref<string[]>([views[0].key]);
 
 <template>
     <a-layout-sider class="menu" v-model:collapsed="collapsed" collapsible collapsedWidth="48px">
+        <div :style="{ height: '46px' }">LOGO</div>
         <a-menu v-model:selectedKeys="selectedKeys">
             <a-menu-item v-for="view in views" :key="view.key">
                 <router-link :to="'/' + view.key">

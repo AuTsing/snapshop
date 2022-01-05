@@ -3,7 +3,8 @@ import { reactive, toRaw } from 'vue';
 import { useStore } from '../store';
 import { debouncedWatch } from '@vueuse/core';
 import { message } from 'ant-design-vue';
-import { ICodeState, defaultCode } from '../store/Code';
+import { defaultCode } from '../store/Code';
+import type { ICodeState } from '../store/Code';
 import ResetButtonVue from '../shared/ResetButton.vue';
 import { useControlCv } from '../plugins/ControlCv';
 
@@ -39,7 +40,7 @@ debouncedWatch(
         <a-form-item v-for="i in 5" :label="`模板${i}`">
             <a-row :gutter="8">
                 <a-col :span="12">
-                    <a-input v-model:value="codeModelRef[`template${i}` as 'template1'|'template2'|'template3'|'template4'|'template5']" />
+                    <a-input v-model:value="codeModelRef[`template${i}` as keyof ICodeState]" />
                 </a-col>
                 <a-col>
                     <a-button @click="() => handleClickGenerateCode(i)">生成代码</a-button>

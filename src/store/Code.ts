@@ -51,7 +51,7 @@ const Code: Module<ICodeState, IRootState> = {
 
             const template = state[`template${i}` as keyof ICodeState];
 
-            const code = template
+            let code = template
                 .replace(/\$points/g, points)
                 .replace(/\$delta/g, delta)
                 .replace(/\$area/g, area)
@@ -62,6 +62,11 @@ const Code: Module<ICodeState, IRootState> = {
                     /\$point\[([1-9])\]/g,
                     (_str, i) => `${recordsValid[parseInt(i) - 1].x},${recordsValid[parseInt(i) - 1].y},${recordsValid[parseInt(i) - 1].c}`
                 );
+
+            if (state.regexp) {
+                const regexp = new RegExp(state.regexp);
+                code = code.replace(regexp, state.regexpReplacement);
+            }
 
             return code;
         },

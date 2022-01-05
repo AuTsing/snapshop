@@ -8,7 +8,9 @@ import NavbarVue from './components/Navbar.vue';
             <NavbarVue />
         </a-col>
         <a-col flex="1 1 auto">
-            <router-view></router-view>
+            <div :style="{ height: '100%', overflowY: 'auto' }">
+                <router-view></router-view>
+            </div>
         </a-col>
     </a-row>
 </template>

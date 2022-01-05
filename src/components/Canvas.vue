@@ -1,13 +1,18 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed } from 'vue';
 import { useStore } from '../store';
 
-import { PlusCircleOutlined, CloseCircleOutlined, MinusCircleOutlined, RotateRightOutlined, LoadingOutlined } from '@ant-design/icons-vue';
+import {
+    CloseCircleOutlined,
+    MinusCircleOutlined,
+    RotateRightOutlined,
+    LoadingOutlined,
+    FolderOpenOutlined,
+    CloudDownloadOutlined,
+} from '@ant-design/icons-vue';
 import { Empty, message } from 'ant-design-vue';
 import PictureVue from './Picture.vue';
-
-const url =
-    'https://gimg2.baidu.com/image_search/src=http%3A%2F%2Fimg.zcool.cn%2Fcommunity%2F0193c96045927e11013ef90fd5ef74.jpg%401280w_1l_2o_100sh.jpg&refer=http%3A%2F%2Fimg.zcool.cn&app=2002&size=f9999,10000&q=a80&n=0&g=0n&fmt=jpeg?sec=1642828554&t=2548877e6582490b5a6a827ec447bc23';
+import OpenerVue from './Opener.vue';
 
 const store = useStore();
 
@@ -104,11 +109,20 @@ const handleDrop = async (e: DragEvent) => {
                     <PictureVue :base64="capture.base64"></PictureVue>
                 </a-tab-pane>
                 <template #leftExtra>
-                    <a-tooltip title="加载图片">
-                        <a-button class="load-button" type="text" @click="handleClickLoad">
-                            <template #icon><PlusCircleOutlined /></template>
+                    <a-tooltip title="远程加载图片">
+                        <a-button type="text" @click="handleClickLoad">
+                            <template #icon><CloudDownloadOutlined /></template>
                         </a-button>
                     </a-tooltip>
+                    <OpenerVue>
+                        <template #default>
+                            <a-tooltip title="本地加载图片">
+                                <a-button type="text">
+                                    <template #icon><FolderOpenOutlined /></template>
+                                </a-button>
+                            </a-tooltip>
+                        </template>
+                    </OpenerVue>
                 </template>
                 <template v-if="captures.length !== 0" #rightExtra>
                     <a-tooltip title="顺时针旋转90°">

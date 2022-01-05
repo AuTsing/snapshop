@@ -2,11 +2,13 @@
 import { ref } from 'vue';
 import { useStore } from '../store';
 import { onKeyStroke } from '@vueuse/core';
+import { useControlCv } from '../plugins/ControlCv';
 
 import CanvasVue from '../components/Canvas.vue';
 import ShowcaseVue from '../components/Showcase.vue';
 
 const store = useStore();
+const controlCv = useControlCv();
 
 const refCanvas = ref();
 
@@ -95,6 +97,39 @@ onKeyStroke(
     e => {
         e.preventDefault();
         store.commit('resetArea');
+    },
+    { target: refCanvas.value }
+);
+onKeyStroke(
+    ['f', 'F', 'g', 'G', 'h', 'H', 'v', 'V', 'b', 'B'],
+    async e => {
+        e.preventDefault();
+        let code: string = '';
+        switch (e.key) {
+            case 'f':
+            case 'F':
+                code = await store.dispatch('generate', 1);
+                break;
+            case 'g':
+            case 'G':
+                code = await store.dispatch('generate', 2);
+                break;
+            case 'h':
+            case 'H':
+                code = await store.dispatch('generate', 3);
+                break;
+            case 'v':
+            case 'V':
+                code = await store.dispatch('generate', 4);
+                break;
+            case 'b':
+            case 'B':
+                code = await store.dispatch('generate', 5);
+                break;
+            default:
+                break;
+        }
+        controlCv.ctrlC(code);
     },
     { target: refCanvas.value }
 );
