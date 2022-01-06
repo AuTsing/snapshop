@@ -4,8 +4,9 @@ import Picker from './Picker';
 import Setting from './Setting';
 import Help from './Help';
 import CodeGenerator from './CodeGenerator';
+import Comparer from './Comparer';
 
-export const views: IRoute[] = [Picker, CodeGenerator, Setting, Help];
+export const views: IRoute[] = [Picker, CodeGenerator, Comparer, Setting, Help];
 
 export const routes: RouteRecordRaw[] = [{ path: '/', component: Picker.view }, ...views.map(view => ({ path: '/' + view.key, component: view.view }))];
 
