@@ -3,7 +3,7 @@ import { ref, computed, watch } from 'vue';
 import { useStore } from '../store';
 import { ICapture } from '../store/Capture';
 import Jimp from 'jimp/browser/lib/jimp';
-import { promiseTimeout, debouncedWatch } from '@vueuse/core';
+import { promiseTimeout } from '@vueuse/core';
 
 import { Empty } from 'ant-design-vue';
 import { LoadingOutlined } from '@ant-design/icons-vue';

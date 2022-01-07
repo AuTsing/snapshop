@@ -6,6 +6,7 @@ import Record, { IRecordState } from './Record';
 import Area, { IAreaState } from './Area';
 import Configuration, { IConfigurationState } from './Configuration';
 import Code, { ICodeState } from './Code';
+import FontLab, { IFontLabState } from './FontLab';
 
 export interface IRootState {
     coordinate: ICoordinateState;
@@ -14,6 +15,7 @@ export interface IRootState {
     area: IAreaState;
     configuration: IConfigurationState;
     code: ICodeState;
+    fontLab: IFontLabState;
 }
 
 export const key: InjectionKey<Store<IRootState>> = Symbol();
@@ -37,8 +39,8 @@ export const store = createStore<IRootState>({
         area: Area,
         configuration: Configuration,
         code: Code,
+        fontLab: FontLab,
     },
-    plugins: [mutationPlugin],
 });
 
 export function useStore() {

@@ -8,6 +8,22 @@ export interface ICoordinateState {
     y: number;
 }
 
+export function displayColor(c: number, mode: ColorMode): string {
+    switch (mode) {
+        case ColorMode.dec:
+            return c.toString();
+        case ColorMode.hex:
+            return `000000${c.toString(16).slice(0, -2)}`.slice(-6);
+        case ColorMode.hexWith0x:
+            return '0x' + `000000${c.toString(16).slice(0, -2)}`.slice(-6);
+        case ColorMode.hexWithPound:
+            return '#' + `000000${c.toString(16).slice(0, -2)}`.slice(-6);
+        case ColorMode.rgb:
+            const rgba = Jimp.intToRGBA(c);
+            return `${rgba.r},${rgba.g},${rgba.b}`;
+    }
+}
+
 const Coordinate: Module<ICoordinateState, IRootState> = {
     state: {
         x: -1,
@@ -16,24 +32,13 @@ const Coordinate: Module<ICoordinateState, IRootState> = {
     getters: {
         c:
             (_state, getters, rootState, _rootGetters) =>
-            (display: ColorMode = rootState.configuration.colorMode) => {
+            (mode: ColorMode = rootState.configuration.colorMode) => {
                 const cNative: number = getters.cNative;
                 if (cNative === -1) {
                     return '-1';
                 }
-                switch (display) {
-                    case ColorMode.dec:
-                        return cNative.toString();
-                    case ColorMode.hex:
-                        return `000000${cNative.toString(16).slice(0, -2)}`.slice(-6);
-                    case ColorMode.hexWith0x:
-                        return '0x' + `000000${cNative.toString(16).slice(0, -2)}`.slice(-6);
-                    case ColorMode.hexWithPound:
-                        return '#' + `000000${cNative.toString(16).slice(0, -2)}`.slice(-6);
-                    case ColorMode.rgb:
-                        const rgba = Jimp.intToRGBA(cNative);
-                        return `${rgba.r},${rgba.g},${rgba.b}`;
-                }
+                const display = displayColor(cNative, mode);
+                return display;
             },
         cNative: (state, _getters, _rootState, rootGetters) => {
             if (state.x > -1 && state.y > -1) {
