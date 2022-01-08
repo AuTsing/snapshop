@@ -15,6 +15,13 @@ export interface IFontLabState {
     castMode: ICastMode;
     previewJimp?: Jimp;
     previewBase64: string;
+    fonts: IFont[];
+}
+
+export interface IFont {
+    key: string;
+    definition: string;
+    code: string;
 }
 
 export type TCastRgb = {
@@ -30,6 +37,7 @@ const FontLab: Module<IFontLabState, IRootState> = {
         castMode: ICastMode.auto,
         previewJimp: undefined,
         previewBase64: '',
+        fonts: [],
     },
     getters: {
         castRgb: (state, _getters, rootState) => {
@@ -98,6 +106,14 @@ const FontLab: Module<IFontLabState, IRootState> = {
     mutations: {
         setFontLab: <T extends keyof IFontLabState>(state: IFontLabState, { key, value }: { key: T; value: IFontLabState[T] }) => {
             state[key] = value;
+        },
+        addFont: (state, font: IFont) => {
+            state.fonts.push(font);
+        },
+        removeFont: (state, key: string) => {
+            const filtered = state.fonts.filter(font => font.key !== key);
+            const recognized = filtered.map((font, i) => ({ ...font, key: i.toString() }));
+            state.fonts = recognized;
         },
     },
     actions: {
