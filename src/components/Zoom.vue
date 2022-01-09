@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue';
+import { ref, computed, watch, StyleValue } from 'vue';
 import { useStore } from '../store';
 import Jimp from 'jimp/browser/lib/jimp';
+import { ICoordinateState } from '../store/Coordinate';
 
 const defaultPreview =
     'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAANSURBVBhXY2BgYGAAAAAFAAGKM+MAAAAAAElFTkSuQmCC';
@@ -12,9 +13,22 @@ const zoomSideLengthDisplay = zoomSideLength * zoomDisplayRatio;
 
 const store = useStore();
 
+const zoomCaptureJimp = ref<Jimp | undefined>();
 const zoomCaptureBase64 = ref<string>('');
+const sameCoordinates = ref<ICoordinateState[]>([]);
 const x = computed(() => store.state.coordinate.x);
 const y = computed(() => store.state.coordinate.y);
+
+const sameCoordinateStyle = (coor: ICoordinateState): StyleValue => {
+    const left = (coor.x - 1) * zoomDisplayRatio;
+    const top = (coor.y - 1) * zoomDisplayRatio;
+    return {
+        left: `${left}px`,
+        top: `${top}px`,
+    };
+};
+
+const arr: number[] = [];
 
 watch([x, y], async () => {
     const activeJimp = store.getters.activeJimp;
@@ -31,24 +45,46 @@ watch([x, y], async () => {
                 }
             }
         }
+        const unResizedJimp = jimp.clone();
         const resizedJimp = jimp.resize(zoomSideLengthDisplay, zoomSideLengthDisplay, Jimp.RESIZE_NEAREST_NEIGHBOR);
         const base64 = await resizedJimp.getBase64Async(Jimp.MIME_PNG);
+        zoomCaptureJimp.value = unResizedJimp;
         zoomCaptureBase64.value = base64;
     } else {
+        zoomCaptureJimp.value = undefined;
         zoomCaptureBase64.value = defaultPreview;
     }
 });
+if (store.state.configuration.showSameCoordinate) {
+    watch(zoomCaptureJimp, () => {
+        const jimp = zoomCaptureJimp.value;
+        if (!jimp) {
+            sameCoordinates.value = [];
+            return;
+        }
+        const c = jimp.getPixelColor(11, 11);
+        const same: ICoordinateState[] = [];
+
+        jimp.scan(0, 0, jimp.bitmap.width, jimp.bitmap.height, (sx, sy) => {
+            if (sx === 11 && sy === 11) {
+                return;
+            }
+            const sc = jimp.getPixelColor(sx, sy);
+            if (sc === c) {
+                same.push({ x: sx, y: sy });
+            }
+        });
+        sameCoordinates.value = same;
+    });
+}
 </script>
 
 <template>
     <div class="zoom-container">
-        <img
-            class="zoom-cursor"
-            src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASwAAAEsCAYAAAB5fY51AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAIhSURBVHhe7dztCoIwAIZR6/7v2Zwf2dqGutooOKdAsN5/8mBBDQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD8k9t6hMvG+VlnuvBce0A/c7DC45Jx/CR0AFWe4TkdrdCqlx1AL1F4DqO1xCqIdgA9JOEpRmuPVZDsAFrLhieJVhyrILsDaKkYnme00lgFxR1AKwfhKb4mWNS6r0f4ovnO6jZlSZiA35C/U3r7GJiJVn4H0FAanvx3VtO7ovPpDqCxODyFWG1eohXvADrYw3MQq80arX0H0MkSnpOx2kzREixq+cU81T4Jj39rAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgDrD8ACsgGSl3BVi9gAAAABJRU5ErkJggg=="
-            alt=""
-            :draggable="false"
-        />
-        <img class="zoom-cover" :src="''" alt="" :draggable="false" />
+        <div class="zoom-cursor zoom-cursor-red"></div>
+        <div class="zoom-cursor zoom-cursor-green"></div>
+        <div class="zoom-cursor zoom-cursor-blue"></div>
+        <div v-for="coor in sameCoordinates" class="zoom-cover" :style="sameCoordinateStyle(coor)"></div>
         <img class="zoom-content" :src="zoomCaptureBase64" alt="" :draggable="false" />
     </div>
 </template>
@@ -62,13 +98,31 @@ watch([x, y], async () => {
 }
 .zoom-cursor {
     position: absolute;
-    width: 100%;
-    height: 100%;
+    pointer-events: none;
+    width: 14px;
+    height: 14px;
+    top: calc(50% - 7px);
+    left: calc(50% - 7px);
+}
+.zoom-cursor-red {
     z-index: 3;
+    border: solid 3px red;
+}
+.zoom-cursor-green {
+    z-index: 4;
+    border: solid 2px green;
+}
+.zoom-cursor-blue {
+    z-index: 5;
+    border: solid 1px blue;
 }
 .zoom-cover {
     position: absolute;
     z-index: 2;
+    width: 14px;
+    height: 14px;
+    pointer-events: none;
+    background-color: red;
 }
 .zoom-content {
     position: absolute;

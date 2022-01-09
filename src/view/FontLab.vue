@@ -39,7 +39,7 @@ const handleChangeTolerance = (value: number) => {
     store.commit('setFontLab', { key: 'tolerance', value });
     store.dispatch('updateFontLabPreview');
 };
-const handleBlurCustomCast = (e: any) => {
+const handleBlurCustomCast = () => {
     if (!customCast.value) {
         return;
     }
@@ -52,6 +52,18 @@ const handleBlurCustomCast = (e: any) => {
     const cast1 = casts[1].toUpperCase();
     const cast2 = casts[2].toUpperCase();
     customCast.value = `${cast1} , ${cast2}`;
+};
+const handleClickCopyCast = () => {
+    let copyCast: string | undefined;
+    if (store.state.fontLab.castMode === ICastMode.auto && store.getters.cast !== '') {
+        copyCast = store.getters.cast;
+    } else if (store.state.fontLab.castMode === ICastMode.custom && store.state.fontLab.customCast !== '') {
+        copyCast = store.state.fontLab.customCast;
+    }
+    if (!copyCast) {
+        return;
+    }
+    controlCv.ctrlC(copyCast);
 };
 const handleClickAddFont = () => {
     if (definition.value === '' || previewBase64.value === '') {
@@ -161,14 +173,21 @@ onMounted(() => {
                         <a-select-option :value="ICastMode.auto">{{ ICastMode.auto }}</a-select-option>
                         <a-select-option :value="ICastMode.custom">{{ ICastMode.custom }}</a-select-option>
                     </a-select>
-                    <a-input v-if="castMode === ICastMode.auto" :value="cast" style="width: 60%" :disabled="true" placeholder="未选择颜色" />
+                    <a-input v-if="castMode === ICastMode.auto" :value="cast" style="width: 50%" :disabled="true" placeholder="未选择颜色" />
                     <a-input
                         v-if="castMode === ICastMode.custom"
                         v-model:value="customCast"
-                        style="width: 60%"
+                        style="width: 50%"
                         :placeholder="cast"
                         @blur="handleBlurCustomCast"
                     />
+                    <a-button
+                        type="text"
+                        style="width: 10%"
+                        :disabled="(castMode === ICastMode.auto && cast === '') || (castMode === ICastMode.custom && customCast === '')"
+                    >
+                        <CopyOutlined @click="handleClickCopyCast" />
+                    </a-button>
                 </a-input-group>
                 <a-divider orientation="left">预览</a-divider>
                 <div v-if="previewBase64 === ''" class="placeholder">未选择范围或颜色</div>

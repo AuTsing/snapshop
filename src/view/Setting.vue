@@ -36,15 +36,18 @@ debouncedWatch(
             </a-select>
         </a-form-item>
         <a-form-item label="链接">
-            <a-input v-model:value="configurationModelRef.link" />
+            <a-input v-model:value="configurationModelRef.link" allowClear />
         </a-form-item>
         <a-form-item label="HttpAPI">
-            <a-input v-model:value="configurationModelRef.httpApi" />
+            <a-input v-model:value="configurationModelRef.httpApi" allowClear />
         </a-form-item>
         <a-form-item label="颜色模式">
             <a-select v-model:value="configurationModelRef.colorMode">
                 <a-select-option v-for="option in ColorMode" :value="option">{{ option }}</a-select-option>
             </a-select>
+        </a-form-item>
+        <a-form-item label="预览显示相同颜色的像素点">
+            <a-switch v-model:checked="configurationModelRef.showSameCoordinate" />
         </a-form-item>
         <a-form-item>
             <ResetButtonVue :handleClick="handleClickResetConfiguration" />

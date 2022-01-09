@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref, watchEffect } from 'vue';
-import { useMouseInElement, pausableWatch, useElementHover, onKeyStroke } from '@vueuse/core';
+import { ref, watchEffect, computed, StyleValue } from 'vue';
+import { useMouseInElement, pausableWatch, useElementHover } from '@vueuse/core';
 import { useStore } from '../store';
 
 const store = useStore();
@@ -9,11 +9,30 @@ const { base64 } = defineProps({
     base64: { type: String, required: true },
 });
 
-const imgCover = ref<string | undefined>();
 const refImgContent = ref();
-
 const { elementX, elementY } = useMouseInElement(refImgContent);
-const isHovered = useElementHover(refImgContent);
+const isHoveredImgContent = useElementHover(refImgContent);
+const areaStyle = computed<StyleValue>(() => {
+    if (Object.values(store.state.area).some(p => p === -1)) {
+        return {
+            width: `0`,
+            height: `0`,
+            left: `0`,
+            top: `0`,
+        };
+    }
+    const { x1, y1, x2, y2 } = store.state.area;
+    const width = Math.abs(x1 - x2) + 1;
+    const height = Math.abs(y1 - y2) + 1;
+    const left = Math.min(x1, x2);
+    const top = Math.min(y1, y2);
+    return {
+        width: `${width}px`,
+        height: `${height}px`,
+        left: `${left}px`,
+        top: `${top}px`,
+    };
+});
 
 const handleClickImg = () => {
     if (store.getters.xyLegal()) {
@@ -25,7 +44,7 @@ const { pause, resume } = pausableWatch([elementX, elementY], () => {
     store.commit('updateCoordinate', { x: Math.round(elementX.value), y: Math.round(elementY.value) });
 });
 watchEffect(() => {
-    if (isHovered.value) {
+    if (isHoveredImgContent.value) {
         resume();
     } else {
         pause();
@@ -36,7 +55,7 @@ watchEffect(() => {
 
 <template>
     <div class="img-container">
-        <img class="img-cover" :src="imgCover" alt="" draggable="false" />
+        <div class="img-area" :style="areaStyle"></div>
         <img ref="refImgContent" class="img-content" :src="base64" alt="" draggable="false" @click="handleClickImg" />
     </div>
 </template>
@@ -48,9 +67,12 @@ watchEffect(() => {
     width: 100%;
     overflow: auto;
 }
-.img-cover {
+.img-area {
     position: absolute;
     z-index: 2;
+    background-color: #3eaf7c44;
+    transition: all 0.05s linear;
+    pointer-events: none;
 }
 .img-content {
     position: absolute;

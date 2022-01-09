@@ -20,6 +20,7 @@ export interface IConfigurationState {
     link: string;
     httpApi: string;
     colorMode: ColorMode;
+    showSameCoordinate: boolean;
 }
 
 export const defaultConfiguration: IConfigurationState = {
@@ -27,6 +28,7 @@ export const defaultConfiguration: IConfigurationState = {
     link: '',
     httpApi: '',
     colorMode: ColorMode.hexWith0x,
+    showSameCoordinate: false,
 };
 
 const state = useStorage('configuration', defaultConfiguration);
