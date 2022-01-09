@@ -104,6 +104,7 @@ watch(selectedCaptures, compare);
 .list {
     flex: 0 0 260px;
     overflow-y: scroll;
+    border-right: solid #1f1f1f;
 }
 .show {
     height: 100%;
