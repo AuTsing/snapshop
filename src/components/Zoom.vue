@@ -122,7 +122,7 @@ if (store.state.configuration.showSameCoordinate) {
     width: 14px;
     height: 14px;
     pointer-events: none;
-    background-color: red;
+    background-color: #ff000088;
 }
 .zoom-content {
     position: absolute;
