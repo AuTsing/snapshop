@@ -20,17 +20,6 @@ export interface IRootState {
 
 export const key: InjectionKey<Store<IRootState>> = Symbol();
 
-const mutationPlugin = (store: any) => {
-    store.subscribe((mutation: any, state: any) => {
-        console.log(mutation.type);
-    });
-};
-const actionPlugin = (store: any) => {
-    store.subscribeAction((action: any, state: any) => {
-        console.log(action.type);
-    });
-};
-
 export const store = createStore<IRootState>({
     modules: {
         coordinate: Coordinate,

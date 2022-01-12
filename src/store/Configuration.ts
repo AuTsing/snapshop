@@ -1,6 +1,6 @@
 import { Module } from 'vuex';
 import { IRootState } from '.';
-import { useStorage } from '@vueuse/core';
+import { useDisk } from '../plugins/Disk';
 
 export enum ColorMode {
     dec = '十进制',
@@ -31,10 +31,10 @@ export const defaultConfiguration: IConfigurationState = {
     showSameCoordinate: false,
 };
 
-const state = useStorage('configuration', defaultConfiguration);
+const defaultConfigurationCopy = Object.assign({}, defaultConfiguration);
+const state = useDisk().useStorage('configuration', defaultConfigurationCopy);
 const Configuration: Module<IConfigurationState, IRootState> = {
     state: () => {
-        const defaultConfigurationCopy = Object.assign({}, defaultConfiguration);
         Object.assign(defaultConfigurationCopy, state.value);
         Object.assign(state.value, defaultConfigurationCopy);
         return state.value;

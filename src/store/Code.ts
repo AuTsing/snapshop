@@ -1,6 +1,6 @@
 import { Module } from 'vuex';
 import { IRootState } from '.';
-import { useStorage } from '@vueuse/core';
+import { useDisk } from '../plugins/Disk';
 
 export interface ICodeState {
     template1: string;
@@ -22,12 +22,12 @@ export const defaultCode: ICodeState = {
     regexpReplacement: '',
 };
 
-const state = useStorage('code', defaultCode);
+const defaultCodeCopy = Object.assign({}, defaultCode);
+const state = useDisk().useStorage('code', defaultCodeCopy);
 const Code: Module<ICodeState, IRootState> = {
     state: () => {
-        const defaultConfigurationCopy = Object.assign({}, defaultCode);
-        Object.assign(defaultConfigurationCopy, state.value);
-        Object.assign(state.value, defaultConfigurationCopy);
+        Object.assign(defaultCodeCopy, state.value);
+        Object.assign(state.value, defaultCodeCopy);
         return state.value;
     },
     mutations: {

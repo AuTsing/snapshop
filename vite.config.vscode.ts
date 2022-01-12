@@ -5,6 +5,7 @@ import { AntDesignVueResolver } from 'unplugin-vue-components/resolvers';
 import { getThemeVariables } from 'ant-design-vue/dist/theme';
 
 export default defineConfig(({ mode }) => ({
+    envDir: 'env',
     plugins: [
         vue(),
         Components({
@@ -26,7 +27,7 @@ export default defineConfig(({ mode }) => ({
                 manualChunks: undefined,
             },
         },
-        watch: mode === 'development' ? {} : null,
+        watch: mode.search('development') > -1 ? {} : null,
     },
     css: {
         preprocessorOptions: {
