@@ -31,10 +31,10 @@ export const defaultConfiguration: IConfigurationState = {
     showSameCoordinate: false,
 };
 
-const defaultConfigurationCopy = Object.assign({}, defaultConfiguration);
-const state = useDisk().useStorage('configuration', defaultConfigurationCopy);
 const Configuration: Module<IConfigurationState, IRootState> = {
     state: () => {
+        const defaultConfigurationCopy = Object.assign({}, defaultConfiguration);
+        const state = useDisk().useStorage('configuration', defaultConfigurationCopy);
         Object.assign(defaultConfigurationCopy, state.value);
         Object.assign(state.value, defaultConfigurationCopy);
         return state.value;

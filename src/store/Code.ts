@@ -22,10 +22,10 @@ export const defaultCode: ICodeState = {
     regexpReplacement: '',
 };
 
-const defaultCodeCopy = Object.assign({}, defaultCode);
-const state = useDisk().useStorage('code', defaultCodeCopy);
 const Code: Module<ICodeState, IRootState> = {
     state: () => {
+        const defaultCodeCopy = Object.assign({}, defaultCode);
+        const state = useDisk().useStorage('code', defaultCodeCopy);
         Object.assign(defaultCodeCopy, state.value);
         Object.assign(state.value, defaultCodeCopy);
         return state.value;
