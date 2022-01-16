@@ -20,8 +20,8 @@ const x = computed(() => store.state.coordinate.x);
 const y = computed(() => store.state.coordinate.y);
 
 const sameCoordinateStyle = (coor: ICoordinateState): StyleValue => {
-    const left = (coor.x - 1) * zoomDisplayRatio;
-    const top = (coor.y - 1) * zoomDisplayRatio;
+    const left = coor.x * zoomDisplayRatio;
+    const top = coor.y * zoomDisplayRatio;
     return {
         left: `${left}px`,
         top: `${top}px`,
@@ -62,11 +62,11 @@ if (store.state.configuration.showSameCoordinate) {
             sameCoordinates.value = [];
             return;
         }
-        const c = jimp.getPixelColor(11, 11);
+        const c = jimp.getPixelColor(10, 10);
         const same: ICoordinateState[] = [];
 
         jimp.scan(0, 0, jimp.bitmap.width, jimp.bitmap.height, (sx, sy) => {
-            if (sx === 11 && sy === 11) {
+            if (sx === 10 && sy === 10) {
                 return;
             }
             const sc = jimp.getPixelColor(sx, sy);
@@ -82,8 +82,8 @@ if (store.state.configuration.showSameCoordinate) {
 <template>
     <div class="zoom-container">
         <div class="zoom-cursor zoom-cursor-red"></div>
-        <div class="zoom-cursor zoom-cursor-green"></div>
-        <div class="zoom-cursor zoom-cursor-blue"></div>
+        <!-- <div class="zoom-cursor zoom-cursor-green"></div> -->
+        <!-- <div class="zoom-cursor zoom-cursor-blue"></div> -->
         <div v-for="coor in sameCoordinates" class="zoom-cover" :style="sameCoordinateStyle(coor)"></div>
         <img class="zoom-content" :src="zoomCaptureBase64" alt="" :draggable="false" />
     </div>
@@ -106,15 +106,8 @@ if (store.state.configuration.showSameCoordinate) {
 }
 .zoom-cursor-red {
     z-index: 3;
-    border: solid 3px red;
-}
-.zoom-cursor-green {
-    z-index: 4;
-    border: solid 2px green;
-}
-.zoom-cursor-blue {
-    z-index: 5;
-    border: solid 1px blue;
+    border: solid 1px red;
+    outline: solid 1px white;
 }
 .zoom-cover {
     position: absolute;
@@ -122,7 +115,8 @@ if (store.state.configuration.showSameCoordinate) {
     width: 14px;
     height: 14px;
     pointer-events: none;
-    background-color: #ff000088;
+    border: solid 1px rgb(127, 0, 0);
+    outline: solid 1px white;
 }
 .zoom-content {
     position: absolute;

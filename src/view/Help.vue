@@ -13,6 +13,8 @@ const sampleHotkeys = [
     { key: '7', hotkey: '1-9 / 鼠标左键', action: '取点 1-9' },
     { key: '8', hotkey: 'Z', action: '清空点列表' },
     { key: '9', hotkey: 'X', action: '清空范围' },
+    { key: '10', hotkey: 'R', action: '加载远程图片' },
+    { key: '11', hotkey: 'T', action: '加载本地图片' },
 ];
 const generateCodeHotkeysColumns = [
     { title: '快捷键', dataIndex: 'hotkey' },

@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { useStore } from '../store';
+import { onKeyStroke } from '@vueuse/core';
 
 import {
     CloseCircleOutlined,
@@ -16,6 +17,7 @@ import OpenerVue from './Opener.vue';
 
 const store = useStore();
 
+const refOpener = ref();
 const activeKey = computed(() => store.state.capture.activeKey);
 const captures = computed(() => store.state.capture.captures);
 const spinning = computed(() => store.state.capture.loading);
@@ -94,6 +96,14 @@ const handleDrop = async (e: DragEvent) => {
     }
     store.commit('setCaptureLoading', false);
 };
+const handleClickOpen = () => {
+    refOpener.value.handleClickOpen();
+};
+
+defineExpose({
+    handleClickLoad,
+    handleClickOpen,
+});
 </script>
 
 <template>
@@ -115,7 +125,7 @@ const handleDrop = async (e: DragEvent) => {
                                 <template #icon><CloudDownloadOutlined /></template>
                             </a-button>
                         </a-tooltip>
-                        <OpenerVue>
+                        <OpenerVue ref="refOpener">
                             <template #default>
                                 <a-tooltip title="本地加载图片">
                                     <a-button type="text">

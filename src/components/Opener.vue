@@ -1,30 +1,32 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useStore } from '../store';
-import type { UploadChangeParam } from 'ant-design-vue';
 
 const store = useStore();
 
-const fileList = ref<{ originFileObj: File }[]>([]);
+const refOpener = ref();
 
-const handleClickOpen = async (params: UploadChangeParam) => {
-    if (params.file === params.fileList[params.fileList.length - 1].originFileObj) {
-        store.commit('setCaptureLoading', true);
-        const files: File[] = fileList.value.map(file => file.originFileObj);
-        for (const file of files) {
-            const key = await store.dispatch('addCaptureFromFile', file);
-            store.commit('setActiveKey', key);
-        }
-        store.commit('setCaptureLoading', false);
+const handleChangeFile = async (fileList: FileList) => {
+    const files = Array.from(fileList);
+    store.commit('setCaptureLoading', true);
+    for (const file of files) {
+        const key = await store.dispatch('addCaptureFromFile', file);
+        store.commit('setActiveKey', key);
     }
-    fileList.value = [];
+    store.commit('setCaptureLoading', false);
 };
+const handleClickOpen = () => {
+    refOpener.value.click();
+};
+
+defineExpose({
+    handleClickOpen,
+});
 </script>
 
 <template>
-    <a-upload v-model:fileList="fileList" accept=".png,.jpg" :beforeUpload="() => false" :multiple="true" :showUploadList="false" @change="handleClickOpen">
-        <slot><a-button>Open</a-button></slot>
-    </a-upload>
+    <input ref="refOpener" type="file" multiple accept=".png,.jpg" style="display: none" @change="(e:any) => handleChangeFile(e.target.files)" />
+    <span @click="handleClickOpen"><slot></slot></span>
 </template>
 
 <style scoped></style>

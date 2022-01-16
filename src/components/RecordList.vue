@@ -31,6 +31,9 @@ const areas = computed(() => {
     }
 });
 
+const handleClickCopyText = (txt: string) => {
+    controlCv.ctrlC(txt);
+};
 const handleClickCopyRecord = (record: IRecord) => {
     controlCv.ctrlC(`${record.x},${record.y},${record.c}`);
 };
@@ -49,13 +52,15 @@ const handleClickResetArea = () => {
     <a-table :columns="pointsColumns" :data-source="records" bordered size="small" :pagination="false">
         <template #bodyCell="{ column, record }">
             <template v-if="column.dataIndex === 'xy'">
-                {{ `${record.x},${record.y}` }}
+                <span style="cursor: pointer" @click="() => handleClickCopyText(`${record.x},${record.y}`)">{{ `${record.x},${record.y}` }}</span>
             </template>
             <template v-if="column.dataIndex === 'c'">
-                <a-tag class="tag" :color="displayColor(record.cNative, ColorMode.hexWithPound)">{{ record.c }}</a-tag>
+                <a-tag class="tag" :color="displayColor(record.cNative, ColorMode.hexWithPound)">
+                    <span style="cursor: pointer" @click="() => handleClickCopyText(record.c)">{{ record.c }}</span>
+                </a-tag>
             </template>
             <template v-if="column.dataIndex === 'action'">
-                <a-space>
+                <a-space size="middle">
                     <CopyOutlined @click="() => handleClickCopyRecord(record)" />
                     <DeleteOutlined @click="() => handleClickRemoveRecord(record)" />
                 </a-space>
@@ -68,10 +73,15 @@ const handleClickResetArea = () => {
     <a-table :columns="areaColumns" :data-source="areas" bordered size="small" :pagination="false">
         <template #bodyCell="{ column, record }">
             <template v-if="column.dataIndex === 'area'">
-                {{ `${record.x1},${record.y1},${record.x2},${record.y2}` }}
+                <span style="cursor: pointer" @click="() => handleClickCopyText(`${record.x1},${record.y1}`)">
+                    {{ `${record.x1},${record.y1}, ` }}
+                </span>
+                <span style="cursor: pointer" @click="() => handleClickCopyText(`${record.x2},${record.y2}`)">
+                    {{ `${record.x2},${record.y2}` }}
+                </span>
             </template>
             <template v-if="column.dataIndex === 'action'">
-                <a-space>
+                <a-space size="middle">
                     <CopyOutlined @click="() => handleClickCopyArea(record)" />
                     <DeleteOutlined @click="handleClickResetArea" />
                 </a-space>
