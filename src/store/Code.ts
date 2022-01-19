@@ -55,12 +55,12 @@ const Code: Module<ICodeState, IRootState> = {
                 .replace(/\$points/g, points)
                 .replace(/\$delta/g, delta)
                 .replace(/\$area/g, area)
-                .replace(/\$point\[([1-9])\]\[x\]/g, (_str, i) => recordsValid[parseInt(i) - 1].x.toString())
-                .replace(/\$point\[([1-9])\]\[y\]/g, (_str, i) => recordsValid[parseInt(i) - 1].y.toString())
-                .replace(/\$point\[([1-9])\]\[c\]/g, (_str, i) => recordsValid[parseInt(i) - 1].c.toString())
+                .replace(/\$point\[([1-9])\]\[x\]/g, (_str, i) => recordsValid[parseInt(i) - 1]?.x.toString() ?? '')
+                .replace(/\$point\[([1-9])\]\[y\]/g, (_str, i) => recordsValid[parseInt(i) - 1]?.y.toString() ?? '')
+                .replace(/\$point\[([1-9])\]\[c\]/g, (_str, i) => recordsValid[parseInt(i) - 1]?.c.toString() ?? '')
                 .replace(
                     /\$point\[([1-9])\]/g,
-                    (_str, i) => `${recordsValid[parseInt(i) - 1].x},${recordsValid[parseInt(i) - 1].y},${recordsValid[parseInt(i) - 1].c}`
+                    (_str, i) => `${recordsValid[parseInt(i) - 1]?.x ?? ''},${recordsValid[parseInt(i) - 1]?.y ?? ''},${recordsValid[parseInt(i) - 1]?.c ?? ''}`
                 );
 
             if (state.regexp) {

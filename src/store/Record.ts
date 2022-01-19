@@ -22,8 +22,8 @@ const Record: Module<IRecordState, IRootState> = {
     },
     mutations: {
         addRecord: (state, payload: { x: number; y: number; c: string; cNative: number; key?: string }) => {
-            if (state.records.length >= 9) {
-                message.warning('最大取点数为9个');
+            if (state.records.length >= 20) {
+                message.warning('最大取点数为20个');
                 return;
             }
             if (!payload.key) {

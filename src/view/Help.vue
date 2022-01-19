@@ -15,6 +15,7 @@ const sampleHotkeys = [
     { key: '9', hotkey: 'X', action: '清空范围' },
     { key: '10', hotkey: 'R', action: '加载远程图片' },
     { key: '11', hotkey: 'T', action: '加载本地图片' },
+    { key: '12', hotkey: 'N', action: '切换加载远程图片模式' },
 ];
 const generateCodeHotkeysColumns = [
     { title: '快捷键', dataIndex: 'hotkey' },

@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
+import { computed, ref } from 'vue';
 import { useStore } from '../store';
-import { onKeyStroke } from '@vueuse/core';
 
 import {
     CloseCircleOutlined,
@@ -29,7 +28,7 @@ const handleTabsChange = (key: string) => {
 
 const handleClickLoad = async () => {
     store.commit('setCaptureLoading', true);
-    const key = await store.dispatch('addCaptureFromLink', store.state.configuration.link);
+    const key = await store.dispatch('addCaptureFromLink', store.getters.usingApi);
     store.commit('setActiveKey', key);
     store.commit('setCaptureLoading', false);
 };

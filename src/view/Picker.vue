@@ -3,6 +3,7 @@ import { ref } from 'vue';
 import { useStore } from '../store';
 import { onKeyStroke } from '@vueuse/core';
 import { useControlCv } from '../plugins/ControlCv';
+import { message } from 'ant-design-vue';
 
 import CanvasVue from '../components/Canvas.vue';
 import ShowcaseVue from '../components/Showcase.vue';
@@ -135,6 +136,14 @@ onKeyStroke(
 );
 onKeyStroke(['r', 'R'], () => refCanvas.value.handleClickLoad(), { target: refCanvas.value });
 onKeyStroke(['t', 'T'], () => refCanvas.value.handleClickOpen(), { target: refCanvas.value });
+onKeyStroke(
+    ['n', 'N'],
+    async () => {
+        await store.dispatch('useNextLoadCaptureMode');
+        message.info(`远程加载图片模式已切换至: ${store.state.configuration.loadCaptureMode}`);
+    },
+    { target: refCanvas.value }
+);
 </script>
 
 <template>

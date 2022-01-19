@@ -1,14 +1,30 @@
 <script setup lang="ts">
-import { reactive, toRaw, watch } from 'vue';
+import { computed, onMounted, reactive, ref, toRaw } from 'vue';
 import { useStore } from '../store';
-import { debouncedWatch } from '@vueuse/core';
-import { message } from 'ant-design-vue';
+import { debouncedWatch, promiseTimeout } from '@vueuse/core';
+import { useAxios, PluginName, UsableApis } from '../plugins/Axios';
 import { defaultConfiguration, IConfigurationState, LoadCaptureMode, ColorMode } from '../store/Configuration';
 import ResetButtonVue from '../shared/ResetButton.vue';
 
+import { AppstoreAddOutlined, EllipsisOutlined } from '@ant-design/icons-vue';
+import { message } from 'ant-design-vue';
+
 const store = useStore();
+const axios = useAxios();
 
 const configurationModelRef = reactive<IConfigurationState>(Object.assign({}, store.state.configuration));
+const loadingOtherCaptureMode = ref<boolean>(false);
+const loadCaptureModeTouchspriteUsable = ref<boolean>(false);
+const usableLoadCaptureMode = computed(() => {
+    const mode: { value: LoadCaptureMode }[] = [];
+    mode.push({ value: LoadCaptureMode.fromApi1 });
+    mode.push({ value: LoadCaptureMode.fromApi2 });
+    mode.push({ value: LoadCaptureMode.fromApi3 });
+    if (loadCaptureModeTouchspriteUsable.value) {
+        mode.push({ value: LoadCaptureMode.fromTouchsrpite });
+    }
+    return mode;
+});
 
 const handleClickResetConfiguration = () => {
     Object.assign(configurationModelRef, defaultConfiguration);
@@ -26,20 +42,53 @@ debouncedWatch(
     },
     { debounce: 500 }
 );
+
+onMounted(async () => {
+    loadingOtherCaptureMode.value = true;
+    let apis = [...UsableApis];
+    await Promise.all([
+        ...apis.map(async api => {
+            try {
+                const resp = await axios.ping(api.pluginName);
+                if (resp.data === 'pong') {
+                    apis = apis.filter(a => a !== api);
+                    switch (api.pluginName) {
+                        case PluginName.touchsrpite:
+                            loadCaptureModeTouchspriteUsable.value = true;
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            } catch (e) {}
+        }),
+        promiseTimeout(3000),
+    ]);
+    loadingOtherCaptureMode.value = false;
+});
 </script>
 
 <template>
     <a-form :style="{ margin: '16px' }" :wrapperCol="{ span: 12 }" layout="vertical">
-        <a-form-item label="加载图片模式">
-            <a-select v-model:value="configurationModelRef.loadCaptureMode">
-                <a-select-option v-for="option in LoadCaptureMode" :value="option">{{ option }}</a-select-option>
+        <a-form-item>
+            <template #label>
+                <a-space>
+                    <div>加载图片模式</div>
+                    <a-tooltip v-if="usableLoadCaptureMode.length > 3" title="有新的模式可用"><EllipsisOutlined /></a-tooltip>
+                </a-space>
+            </template>
+            <a-select v-model:value="configurationModelRef.loadCaptureMode" :options="usableLoadCaptureMode" :loading="loadingOtherCaptureMode">
+                <template v-if="!loadingOtherCaptureMode && usableLoadCaptureMode.length > 3" #suffixIcon><AppstoreAddOutlined /></template>
             </a-select>
         </a-form-item>
-        <a-form-item label="链接">
-            <a-input v-model:value="configurationModelRef.link" allowClear />
+        <a-form-item label="加载图片接口1">
+            <a-input v-model:value="configurationModelRef.loadCaptureApi1" allowClear />
         </a-form-item>
-        <a-form-item label="HttpAPI">
-            <a-input v-model:value="configurationModelRef.httpApi" allowClear />
+        <a-form-item label="加载图片接口2">
+            <a-input v-model:value="configurationModelRef.loadCaptureApi2" allowClear />
+        </a-form-item>
+        <a-form-item label="加载图片接口3">
+            <a-input v-model:value="configurationModelRef.loadCaptureApi3" allowClear />
         </a-form-item>
         <a-form-item label="颜色模式">
             <a-select v-model:value="configurationModelRef.colorMode">
