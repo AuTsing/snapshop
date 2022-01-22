@@ -46,8 +46,8 @@ debouncedWatch(
 onMounted(async () => {
     loadingOtherCaptureMode.value = true;
     let apis = [...UsableApis];
-    await Promise.all([
-        ...apis.map(async api => {
+    for (let i = 0; i < 5; i++) {
+        apis.map(async api => {
             try {
                 const resp = await axios.ping(api.pluginName);
                 if (resp.data === 'pong') {
@@ -61,9 +61,10 @@ onMounted(async () => {
                     }
                 }
             } catch (e) {}
-        }),
-        promiseTimeout(3000),
-    ]);
+        });
+        await promiseTimeout(1000);
+    }
+    await promiseTimeout(5000);
     loadingOtherCaptureMode.value = false;
 });
 </script>

@@ -23,6 +23,11 @@ class Axios {
         const plugin = UsableApis.find(api => api.pluginName === name)!;
         return this.axios.get<string>('/ping', { baseURL: plugin.baseURL });
     }
+
+    public snap(name: PluginName) {
+        const plugin = UsableApis.find(api => api.pluginName === name)!;
+        return this.axios.get<ArrayBuffer>('/snap', { baseURL: plugin.baseURL, responseType: 'arraybuffer' });
+    }
 }
 
 export const axios: Plugin = {

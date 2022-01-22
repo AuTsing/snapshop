@@ -1,6 +1,7 @@
 import { Module } from 'vuex';
 import { IRootState } from '.';
 import Jimp from 'jimp/browser/lib/jimp';
+import Axios, { AxiosError } from 'axios';
 import { message } from 'ant-design-vue';
 
 export interface ICaptureState {
@@ -82,13 +83,18 @@ const Capture: Module<ICaptureState, IRootState> = {
         },
         addCaptureFromLink: async ({ state, dispatch }, link: string) => {
             try {
-                const jimp = await Jimp.read(link);
+                const resp = await Axios.get<ArrayBuffer>(link, { responseType: 'arraybuffer' });
+                const jimp = await Jimp.read(Buffer.from(resp.data));
                 const base64 = await jimp.getBase64Async(Jimp.MIME_PNG);
                 const capture = await dispatch('addCapture', { jimp, base64 });
                 return capture.key;
-            } catch (error) {
-                if (error instanceof Error) {
-                    message.error('加载图片失败: ' + error.message);
+            } catch (e) {
+                if (e && (e as AxiosError).response) {
+                    const buffer = (e as AxiosError<ArrayBuffer>).response?.data;
+                    const msg = new TextDecoder().decode(buffer);
+                    message.error('加载图片失败: ' + msg);
+                } else if (e instanceof Error) {
+                    message.error('加载图片失败: ' + e.message + ' 这有可能是没有配置CORS导致的');
                 } else {
                     message.error('加载图片失败: 未知错误');
                 }
