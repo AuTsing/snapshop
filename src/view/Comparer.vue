@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
-import { useStore } from '../store';
+import { useCaptureStore } from '../store/Capture';
 import { ICapture } from '../store/Capture';
 import Jimp from 'jimp/browser/lib/jimp';
 import { promiseTimeout } from '@vueuse/core';
@@ -8,9 +8,9 @@ import { promiseTimeout } from '@vueuse/core';
 import { Empty } from 'ant-design-vue';
 import { LoadingOutlined } from '@ant-design/icons-vue';
 
-const store = useStore();
+const captureStore = useCaptureStore();
 
-const captures = computed(() => store.state.capture.captures);
+const captures = computed(() => captureStore.captures);
 const capturesCheckeds = ref<boolean[]>(Array(captures.value.length).fill(false));
 const selectedCaptures = computed(() => {
     const selected: ICapture[] = [];

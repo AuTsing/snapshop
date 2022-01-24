@@ -1,6 +1,8 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
-import { useStore } from '../store';
+import { ref } from 'vue';
+import { storeToRefs } from 'pinia';
+import { useCaptureStore } from '../store/Capture';
+import { useConfigurationStore } from '../store/Configuration';
 
 import {
     CloseCircleOutlined,
@@ -14,49 +16,48 @@ import { Empty, message } from 'ant-design-vue';
 import PictureVue from './Picture.vue';
 import OpenerVue from './Opener.vue';
 
-const store = useStore();
+const captureStore = useCaptureStore();
+const configurationStore = useConfigurationStore();
 
 const refOpener = ref();
-const activeKey = computed(() => store.state.capture.activeKey);
-const captures = computed(() => store.state.capture.captures);
-const spinning = computed(() => store.state.capture.loading);
+const { activeKey, captures, loading: spinning } = storeToRefs(captureStore);
 let dragingTarget: EventTarget | null = null;
 
 const handleTabsChange = (key: string) => {
-    store.commit('setActiveKey', key);
+    captureStore.activeKey = key;
 };
 
 const handleClickLoad = async () => {
-    store.commit('setCaptureLoading', true);
-    const key = await store.dispatch('addCaptureFromLink', store.getters.usingApi);
-    store.commit('setActiveKey', key);
-    store.commit('setCaptureLoading', false);
+    captureStore.loading = true;
+    const key = await captureStore.addCaptureFromLink(configurationStore.usingApi);
+    captureStore.activeKey = key;
+    captureStore.loading = false;
 };
 const handleClickRotate = async () => {
-    store.commit('setCaptureLoading', true);
-    await store.dispatch('rotateCapture');
-    store.commit('setCaptureLoading', false);
+    captureStore.loading = true;
+    await captureStore.rotateCapture();
+    captureStore.loading = false;
 };
 const handleClickClose = () => {
-    const index = store.getters.activeIndex;
-    store.commit('removeCapture', activeKey.value);
+    const index = captureStore.activeIndex;
+    captureStore.removeCapture(activeKey.value);
     if (captures.value[index]) {
-        store.commit('setActiveKey', captures.value[index].key);
+        captureStore.activeKey = captures.value[index].key;
     } else if (captures.value[index - 1]) {
-        store.commit('setActiveKey', captures.value[index - 1].key);
+        captureStore.activeKey = captures.value[index - 1].key;
     } else {
-        store.commit('setActiveKey', 'blank');
+        captureStore.activeKey = 'blank';
     }
 };
 const handleClickCloseAll = () => {
-    store.commit('removeCapture');
-    store.commit('setActiveKey', 'blank');
+    captureStore.removeCapture();
+    captureStore.activeKey = 'blank';
 };
 const handleDragEnter = (e: DragEvent) => {
     e.stopPropagation();
     e.preventDefault();
     dragingTarget = e.target;
-    store.commit('setCaptureLoading', true);
+    captureStore.loading = true;
 };
 const handleDragOver = (e: DragEvent) => {
     e.stopPropagation();
@@ -66,7 +67,7 @@ const handleDragLeave = (e: DragEvent) => {
     e.stopPropagation();
     e.preventDefault();
     if (dragingTarget === e.target) {
-        store.commit('setCaptureLoading', false);
+        captureStore.loading = false;
     }
 };
 const handleDrop = async (e: DragEvent) => {
@@ -85,15 +86,15 @@ const handleDrop = async (e: DragEvent) => {
             throw new Error('不支持的格式');
         }
         for (const file of fileList) {
-            const key = await store.dispatch('addCaptureFromFile', file);
-            store.commit('setActiveKey', key);
+            const key = await captureStore.addCaptureFromFile(file);
+            captureStore.activeKey = key;
         }
     } catch (error) {
         if (error instanceof Error) {
             message.error('打开图片失败: ' + error.message);
         }
     }
-    store.commit('setCaptureLoading', false);
+    captureStore.loading = false;
 };
 const handleClickOpen = () => {
     refOpener.value.handleClickOpen();

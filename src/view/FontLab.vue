@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
-import { useStore } from '../store';
+import { storeToRefs } from 'pinia';
+import { useAreaStore } from '../store/Area';
+import { useRecordStore } from '../store/Record';
+import { useFontLabStore } from '../store/FontLab';
 import { displayColor } from '../store/Coordinate';
 import { ColorMode } from '../store/Configuration';
 import { ICastMode } from '../store/FontLab';
@@ -16,28 +19,21 @@ const fontsColumns = [
     { title: '操作', dataIndex: 'action', width: '25%' },
 ];
 
-const store = useStore();
+const areaStore = useAreaStore();
+const recordStore = useRecordStore();
+const fontLabStore = useFontLabStore();
 const controlCv = useControlCv();
 
-const area = computed(() => store.state.area);
-const records = computed(() => store.state.record.records);
-const cast = computed(() => store.getters.cast);
-const customCast = computed({
-    get: () => store.state.fontLab.customCast,
-    set: value => store.commit('setFontLab', { key: 'customCast', value }),
-});
-const castMode = computed({
-    get: () => store.state.fontLab.castMode,
-    set: value => store.commit('setFontLab', { key: 'castMode', value }),
-});
-const previewBase64 = computed(() => store.state.fontLab.previewBase64);
-const fonts = computed(() => store.state.fontLab.fonts);
-const tolerance = ref<number>(store.state.fontLab.tolerance);
+const area = computed(() => areaStore);
+const records = computed(() => recordStore.records);
+const cast = computed(() => fontLabStore.cast);
+const { customCast, castMode, previewBase64, fonts } = storeToRefs(fontLabStore);
+const tolerance = ref<number>(fontLabStore.tolerance);
 const definition = ref<string>('');
 
 const handleChangeTolerance = (value: number) => {
-    store.commit('setFontLab', { key: 'tolerance', value });
-    store.dispatch('updateFontLabPreview');
+    fontLabStore.tolerance = value;
+    fontLabStore.updateFontLabPreview();
 };
 const handleBlurCustomCast = () => {
     if (!customCast.value) {
@@ -55,10 +51,10 @@ const handleBlurCustomCast = () => {
 };
 const handleClickCopyCast = () => {
     let copyCast: string | undefined;
-    if (store.state.fontLab.castMode === ICastMode.auto && store.getters.cast !== '') {
-        copyCast = store.getters.cast;
-    } else if (store.state.fontLab.castMode === ICastMode.custom && store.state.fontLab.customCast !== '') {
-        copyCast = store.state.fontLab.customCast;
+    if (fontLabStore.castMode === ICastMode.auto && fontLabStore.cast !== '') {
+        copyCast = fontLabStore.cast;
+    } else if (fontLabStore.castMode === ICastMode.custom && fontLabStore.customCast !== '') {
+        copyCast = fontLabStore.customCast;
     }
     if (!copyCast) {
         return;
@@ -70,7 +66,7 @@ const handleClickAddFont = () => {
         return;
     }
 
-    const previewJimp = store.state.fontLab.previewJimp;
+    const previewJimp = fontLabStore.previewJimp;
     if (!previewJimp) {
         return;
     }
@@ -134,7 +130,7 @@ const handleClickAddFont = () => {
         definition: definition.value,
         code: fontCode,
     };
-    store.commit('addFont', font);
+    fontLabStore.addFont(font);
     definition.value = '';
 };
 const handleClickGeneratorFontLab = () => {
@@ -142,14 +138,14 @@ const handleClickGeneratorFontLab = () => {
     controlCv.ctrlC(font);
 };
 const handleClickRemoveFont = (font: IFont) => {
-    store.commit('removeFont', font.key);
+    fontLabStore.removeFont(font.key);
 };
 const handleClickCopyFont = (font: IFont) => {
     controlCv.ctrlC(`'${font.code}',`);
 };
 
 onMounted(() => {
-    store.dispatch('updateFontLabPreview');
+    fontLabStore.updateFontLabPreview();
 });
 </script>
 

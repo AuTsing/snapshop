@@ -1,18 +1,17 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref, toRaw } from 'vue';
-import { useStore } from '../store';
+import { useConfigurationStore, defaultConfiguration, IConfigurationState, LoadCaptureMode, ColorMode } from '../store/Configuration';
 import { debouncedWatch, promiseTimeout } from '@vueuse/core';
 import { useAxios, PluginName, UsableApis } from '../plugins/Axios';
-import { defaultConfiguration, IConfigurationState, LoadCaptureMode, ColorMode } from '../store/Configuration';
 import ResetButtonVue from '../shared/ResetButton.vue';
 
 import { AppstoreAddOutlined, EllipsisOutlined } from '@ant-design/icons-vue';
 import { message } from 'ant-design-vue';
 
-const store = useStore();
+const configurationStore = useConfigurationStore();
 const axios = useAxios();
 
-const configurationModelRef = reactive<IConfigurationState>(Object.assign({}, store.state.configuration));
+const configurationModelRef = reactive<IConfigurationState>(Object.assign({}, configurationStore.$state));
 const loadingOtherCaptureMode = ref<boolean>(false);
 const loadCaptureModeTouchspriteUsable = ref<boolean>(false);
 const usableLoadCaptureMode = computed(() => {
@@ -28,16 +27,14 @@ const usableLoadCaptureMode = computed(() => {
 
 const handleClickResetConfiguration = () => {
     Object.assign(configurationModelRef, defaultConfiguration);
-    store.commit('resetConfiguration');
+    configurationStore.resetConfiguration();
 };
 
 debouncedWatch(
     configurationModelRef,
     () => {
         const configuration = toRaw(configurationModelRef);
-        for (const [key, value] of Object.entries(configuration)) {
-            store.commit('setConfiguration', { key, value });
-        }
+        configurationStore.$patch(configuration);
         message.success('设置保存成功!');
     },
     { debounce: 500 }

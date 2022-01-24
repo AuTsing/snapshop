@@ -1,9 +1,13 @@
 <script setup lang="ts">
 import { ref, watchEffect, computed, StyleValue } from 'vue';
 import { useMouseInElement, pausableWatch, useElementHover } from '@vueuse/core';
-import { useStore } from '../store';
+import { useAreaStore } from '../store/Area';
+import { useCoordinateStore } from '../store/Coordinate';
+import { useRecordStore } from '../store/Record';
 
-const store = useStore();
+const areaStore = useAreaStore();
+const coordinateStore = useCoordinateStore();
+const recordStore = useRecordStore();
 
 const { base64 } = defineProps({
     base64: { type: String, required: true },
@@ -13,7 +17,7 @@ const refImgContent = ref();
 const { elementX, elementY } = useMouseInElement(refImgContent);
 const isHoveredImgContent = useElementHover(refImgContent);
 const areaStyle = computed<StyleValue>(() => {
-    if (Object.values(store.state.area).some(p => p === -1)) {
+    if (Object.values(areaStore).some(p => p === -1)) {
         return {
             width: `0`,
             height: `0`,
@@ -21,7 +25,7 @@ const areaStyle = computed<StyleValue>(() => {
             top: `0`,
         };
     }
-    const { x1, y1, x2, y2 } = store.state.area;
+    const { x1, y1, x2, y2 } = areaStore;
     const width = Math.abs(x1 - x2) + 1;
     const height = Math.abs(y1 - y2) + 1;
     const left = Math.min(x1, x2);
@@ -35,20 +39,20 @@ const areaStyle = computed<StyleValue>(() => {
 });
 
 const handleClickImg = () => {
-    if (store.getters.xyLegal()) {
-        store.commit('addRecord', { x: store.state.coordinate.x, y: store.state.coordinate.y, c: store.getters.c(), cNative: store.getters.cNative });
+    if (coordinateStore.xyLegal()) {
+        recordStore.addRecord(coordinateStore.x, coordinateStore.y, coordinateStore.c(), coordinateStore.cNative);
     }
 };
 
 const { pause, resume } = pausableWatch([elementX, elementY], () => {
-    store.commit('updateCoordinate', { x: Math.round(elementX.value), y: Math.round(elementY.value) });
+    coordinateStore.updateCoordinate(Math.round(elementX.value), Math.round(elementY.value));
 });
 watchEffect(() => {
     if (isHoveredImgContent.value) {
         resume();
     } else {
         pause();
-        store.commit('resetCoordinate');
+        coordinateStore.resetCoordinate();
     }
 });
 </script>

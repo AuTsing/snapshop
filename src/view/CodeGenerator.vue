@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { reactive, toRaw } from 'vue';
-import { useStore } from '../store';
+import { useCodeStore } from '../store/Code';
 import { debouncedWatch } from '@vueuse/core';
 import { message } from 'ant-design-vue';
 import { defaultCode } from '../store/Code';
@@ -8,17 +8,17 @@ import type { ICodeState } from '../store/Code';
 import ResetButtonVue from '../shared/ResetButton.vue';
 import { useControlCv } from '../plugins/ControlCv';
 
-const store = useStore();
+const codeStore = useCodeStore();
 const controlCv = useControlCv();
 
-const codeModelRef = reactive<ICodeState>(Object.assign({}, store.state.code));
+const codeModelRef = reactive<ICodeState>(Object.assign({}, codeStore.$state));
 
 const handleClickResetCode = () => {
     Object.assign(codeModelRef, defaultCode);
-    store.commit('resetCode');
+    codeStore.resetCode();
 };
-const handleClickGenerateCode = async (i: number) => {
-    const code = await store.dispatch('generate', i);
+const handleClickGenerateCode = (i: number) => {
+    const code = codeStore.generate(i);
     controlCv.ctrlC(code);
 };
 
@@ -26,9 +26,7 @@ debouncedWatch(
     codeModelRef,
     () => {
         const code = toRaw(codeModelRef);
-        for (const [key, value] of Object.entries(code)) {
-            store.commit('setCode', { key, value });
-        }
+        codeStore.$patch(code);
         message.success('设置保存成功!');
     },
     { debounce: 500 }

@@ -1,19 +1,19 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { useStore } from '../store';
+import { useCaptureStore } from '../store/Capture';
 
-const store = useStore();
+const captureStore = useCaptureStore();
 
 const refOpener = ref();
 
 const handleChangeFile = async (fileList: FileList) => {
     const files = Array.from(fileList);
-    store.commit('setCaptureLoading', true);
+    captureStore.loading = true;
     for (const file of files) {
-        const key = await store.dispatch('addCaptureFromFile', file);
-        store.commit('setActiveKey', key);
+        const key = await captureStore.addCaptureFromFile(file);
+        captureStore.activeKey = key;
     }
-    store.commit('setCaptureLoading', false);
+    captureStore.loading = false;
 };
 const handleClickOpen = () => {
     refOpener.value.click();

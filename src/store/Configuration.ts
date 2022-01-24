@@ -1,5 +1,4 @@
-import { Module } from 'vuex';
-import { IRootState } from '.';
+import { defineStore } from 'pinia';
 import { useDisk } from '../plugins/Disk';
 import { UsableApis, PluginName } from '../plugins/Axios';
 
@@ -36,8 +35,8 @@ export const defaultConfiguration: IConfigurationState = {
     showSameCoordinate: false,
 };
 
-const Configuration: Module<IConfigurationState, IRootState> = {
-    state: () => {
+export const useConfigurationStore = defineStore('configuration', {
+    state: (): IConfigurationState => {
         const defaultConfigurationCopy = Object.assign({}, defaultConfiguration);
         const state = useDisk().useStorage('configuration', defaultConfigurationCopy);
         Object.assign(defaultConfigurationCopy, state.value);
@@ -45,14 +44,14 @@ const Configuration: Module<IConfigurationState, IRootState> = {
         return state.value;
     },
     getters: {
-        usingApi: state => {
-            switch (state.loadCaptureMode) {
+        usingApi(): string {
+            switch (this.loadCaptureMode) {
                 case LoadCaptureMode.fromApi1:
-                    return state.loadCaptureApi1;
+                    return this.loadCaptureApi1;
                 case LoadCaptureMode.fromApi2:
-                    return state.loadCaptureApi2;
+                    return this.loadCaptureApi2;
                 case LoadCaptureMode.fromApi3:
-                    return state.loadCaptureApi3;
+                    return this.loadCaptureApi3;
                 case LoadCaptureMode.fromTouchsrpite:
                     return UsableApis.find(api => api.pluginName === PluginName.touchsrpite)!.baseURL + 'snap';
                 default:
@@ -60,26 +59,19 @@ const Configuration: Module<IConfigurationState, IRootState> = {
             }
         },
     },
-    mutations: {
-        setConfiguration: <T extends keyof IConfigurationState>(state: IConfigurationState, { key, value }: { key: T; value: IConfigurationState[T] }) => {
-            state[key] = value;
-        },
-        resetConfiguration: state => {
-            Object.assign(state, defaultConfiguration);
-        },
-    },
     actions: {
-        useNextLoadCaptureMode: ({ state, commit }) => {
+        resetConfiguration() {
+            this.$patch(defaultConfiguration);
+        },
+        useNextLoadCaptureMode() {
             const modes = [LoadCaptureMode.fromApi1, LoadCaptureMode.fromApi2, LoadCaptureMode.fromApi3];
             let nextMode: LoadCaptureMode;
-            if (modes.includes(state.loadCaptureMode)) {
-                nextMode = modes[modes.indexOf(state.loadCaptureMode) + 1] ?? LoadCaptureMode.fromApi1;
+            if (modes.includes(this.loadCaptureMode)) {
+                nextMode = modes[modes.indexOf(this.loadCaptureMode) + 1] ?? LoadCaptureMode.fromApi1;
             } else {
                 nextMode = LoadCaptureMode.fromApi1;
             }
-            commit('setConfiguration', { key: 'loadCaptureMode', value: nextMode });
+            this.loadCaptureMode = nextMode;
         },
     },
-};
-
-export default Configuration;
+});

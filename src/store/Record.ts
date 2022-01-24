@@ -1,6 +1,4 @@
-import { Module } from 'vuex';
-import { IRootState } from '.';
-
+import { defineStore } from 'pinia';
 import { message } from 'ant-design-vue';
 import 'ant-design-vue/es/message/style/index';
 
@@ -16,40 +14,37 @@ export interface IRecordState {
     records: IRecord[];
 }
 
-const Record: Module<IRecordState, IRootState> = {
-    state: {
+export const useRecordStore = defineStore('record', {
+    state: (): IRecordState => ({
         records: [],
-    },
-    mutations: {
-        addRecord: (state, payload: { x: number; y: number; c: string; cNative: number; key?: string }) => {
-            if (state.records.length >= 20) {
+    }),
+    actions: {
+        addRecord(x: number, y: number, c: string, cNative: number, key?: string) {
+            if (this.records.length >= 20) {
                 message.warning('最大取点数为20个');
                 return;
             }
-            if (!payload.key) {
-                const key = (state.records.length + 1).toString();
-                state.records.push({ key, ...payload });
+            if (!key) {
+                const key = (this.records.length + 1).toString();
+                this.records.push({ key, x, y, c, cNative });
             } else {
-                const key = payload.key;
                 const index = parseInt(key) - 1;
                 for (let i = 0; i < index; i++) {
-                    if (!state.records[i]) {
-                        state.records[i] = { key: (i + 1).toString(), x: -1, y: -1, c: '-1', cNative: -1 };
+                    if (!this.records[i]) {
+                        this.records[i] = { key: (i + 1).toString(), x: -1, y: -1, c: '-1', cNative: -1 };
                     }
                 }
-                state.records[index] = { key, ...payload };
+                this.records[index] = { key, x, y, c, cNative };
             }
         },
-        removeRecord: (state, key?: string) => {
+        removeRecord(key?: string) {
             if (key) {
-                const filtered = state.records.filter(record => record.key !== key);
+                const filtered = this.records.filter(record => record.key !== key);
                 const recognized = filtered.map((record, i) => ({ ...record, key: i.toString() }));
-                state.records = recognized;
+                this.records = recognized;
             } else {
-                state.records = [];
+                this.records = [];
             }
         },
     },
-};
-
-export default Record;
+});

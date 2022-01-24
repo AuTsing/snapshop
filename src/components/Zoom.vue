@@ -1,6 +1,9 @@
 <script setup lang="ts">
-import { ref, computed, watch, StyleValue } from 'vue';
-import { useStore } from '../store';
+import { ref, watch, StyleValue } from 'vue';
+import { storeToRefs } from 'pinia';
+import { useCoordinateStore } from '../store/Coordinate';
+import { useCaptureStore } from '../store/Capture';
+import { useConfigurationStore } from '../store/Configuration';
 import Jimp from 'jimp/browser/lib/jimp';
 import { ICoordinateState } from '../store/Coordinate';
 
@@ -11,13 +14,14 @@ const zoomSideLength = zoomRadius * 2 + 1;
 const zoomDisplayRatio = 14;
 const zoomSideLengthDisplay = zoomSideLength * zoomDisplayRatio;
 
-const store = useStore();
+const coordinateStore = useCoordinateStore();
+const captureStore = useCaptureStore();
+const configurationStore = useConfigurationStore();
 
 const zoomCaptureJimp = ref<Jimp | undefined>();
 const zoomCaptureBase64 = ref<string>('');
 const sameCoordinates = ref<ICoordinateState[]>([]);
-const x = computed(() => store.state.coordinate.x);
-const y = computed(() => store.state.coordinate.y);
+const { x, y } = storeToRefs(coordinateStore);
 
 const sameCoordinateStyle = (coor: ICoordinateState): StyleValue => {
     const left = coor.x * zoomDisplayRatio;
@@ -31,9 +35,9 @@ const sameCoordinateStyle = (coor: ICoordinateState): StyleValue => {
 const arr: number[] = [];
 
 watch([x, y], async () => {
-    const activeJimp = store.getters.activeJimp;
-    const x0 = store.state.coordinate.x;
-    const y0 = store.state.coordinate.y;
+    const activeJimp = captureStore.activeJimp;
+    const x0 = x.value;
+    const y0 = y.value;
     if (activeJimp && x0 > -1 && y0 > -1) {
         const jimp = new Jimp(zoomSideLength, zoomSideLength, 0);
         for (let i = -zoomRadius; i <= zoomRadius; ++i) {
@@ -55,7 +59,7 @@ watch([x, y], async () => {
         zoomCaptureBase64.value = defaultPreview;
     }
 });
-if (store.state.configuration.showSameCoordinate) {
+if (configurationStore.showSameCoordinate) {
     watch(zoomCaptureJimp, () => {
         const jimp = zoomCaptureJimp.value;
         if (!jimp) {

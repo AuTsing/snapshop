@@ -1,6 +1,10 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { useStore } from '../store';
+import { useCoordinateStore } from '../store/Coordinate';
+import { useRecordStore } from '../store/Record';
+import { useAreaStore } from '../store/Area';
+import { useCodeStore } from '../store/Code';
+import { useConfigurationStore } from '../store/Configuration';
 import { onKeyStroke } from '@vueuse/core';
 import { useControlCv } from '../plugins/ControlCv';
 import { message } from 'ant-design-vue';
@@ -8,7 +12,11 @@ import { message } from 'ant-design-vue';
 import CanvasVue from '../components/Canvas.vue';
 import ShowcaseVue from '../components/Showcase.vue';
 
-const store = useStore();
+const coordinateStore = useCoordinateStore();
+const recordStore = useRecordStore();
+const areaStore = useAreaStore();
+const codeStore = useCodeStore();
+const configurationStore = useConfigurationStore();
 const controlCv = useControlCv();
 
 const refCanvas = ref();
@@ -17,8 +25,8 @@ onKeyStroke(
     ['w', 'W', 'ArrowUp', 'a', 'A', 'ArrowLeft', 's', 'S', 'ArrowDown', 'd', 'D', 'ArrowRight'],
     e => {
         e.preventDefault();
-        let x = store.state.coordinate.x;
-        let y = store.state.coordinate.y;
+        let x = coordinateStore.x;
+        let y = coordinateStore.y;
         switch (e.key) {
             case 'w':
             case 'W':
@@ -43,8 +51,8 @@ onKeyStroke(
             default:
                 break;
         }
-        if (store.getters.xyLegal(x, y)) {
-            store.commit('updateCoordinate', { x, y });
+        if (coordinateStore.xyLegal(x, y)) {
+            coordinateStore.updateCoordinate(x, y);
         }
     },
     { target: refCanvas.value }
@@ -53,10 +61,10 @@ onKeyStroke(
     ['1', '2', '3', '4', '5', '6', '7', '8', '9'],
     e => {
         e.preventDefault();
-        const x = store.state.coordinate.x;
-        const y = store.state.coordinate.y;
-        if (store.getters.xyLegal(x, y)) {
-            store.commit('addRecord', { x, y, c: store.getters.c(), cNative: store.getters.cNative, key: e.key });
+        const x = coordinateStore.x;
+        const y = coordinateStore.y;
+        if (coordinateStore.xyLegal(x, y)) {
+            recordStore.addRecord(x, y, coordinateStore.c(), coordinateStore.cNative, e.key);
         }
     },
     { target: refCanvas.value }
@@ -65,10 +73,10 @@ onKeyStroke(
     ['q', 'Q'],
     e => {
         e.preventDefault();
-        const x = store.state.coordinate.x;
-        const y = store.state.coordinate.y;
-        if (store.getters.xyLegal(x, y)) {
-            store.commit('updateArea', { ...store.state.area, x1: x, y1: y });
+        const x = coordinateStore.x;
+        const y = coordinateStore.y;
+        if (coordinateStore.xyLegal(x, y)) {
+            areaStore.updateArea(x, y, areaStore.x2, areaStore.y2);
         }
     },
     { target: refCanvas.value }
@@ -77,10 +85,10 @@ onKeyStroke(
     ['e', 'E'],
     e => {
         e.preventDefault();
-        const x = store.state.coordinate.x;
-        const y = store.state.coordinate.y;
-        if (store.getters.xyLegal(x, y)) {
-            store.commit('updateArea', { ...store.state.area, x2: x, y2: y });
+        const x = coordinateStore.x;
+        const y = coordinateStore.y;
+        if (coordinateStore.xyLegal(x, y)) {
+            areaStore.updateArea(areaStore.x1, areaStore.y1, x, y);
         }
     },
     { target: refCanvas.value }
@@ -89,7 +97,7 @@ onKeyStroke(
     ['z', 'Z'],
     e => {
         e.preventDefault();
-        store.commit('removeRecord');
+        recordStore.removeRecord();
     },
     { target: refCanvas.value }
 );
@@ -97,35 +105,35 @@ onKeyStroke(
     ['x', 'X'],
     e => {
         e.preventDefault();
-        store.commit('resetArea');
+        areaStore.resetArea();
     },
     { target: refCanvas.value }
 );
 onKeyStroke(
     ['f', 'F', 'g', 'G', 'h', 'H', 'v', 'V', 'b', 'B'],
-    async e => {
+    e => {
         e.preventDefault();
         let code: string = '';
         switch (e.key) {
             case 'f':
             case 'F':
-                code = await store.dispatch('generate', 1);
+                code = codeStore.generate(1);
                 break;
             case 'g':
             case 'G':
-                code = await store.dispatch('generate', 2);
+                code = codeStore.generate(2);
                 break;
             case 'h':
             case 'H':
-                code = await store.dispatch('generate', 3);
+                code = codeStore.generate(3);
                 break;
             case 'v':
             case 'V':
-                code = await store.dispatch('generate', 4);
+                code = codeStore.generate(4);
                 break;
             case 'b':
             case 'B':
-                code = await store.dispatch('generate', 5);
+                code = codeStore.generate(5);
                 break;
             default:
                 break;
@@ -139,8 +147,8 @@ onKeyStroke(['t', 'T'], () => refCanvas.value.handleClickOpen(), { target: refCa
 onKeyStroke(
     ['n', 'N'],
     async () => {
-        await store.dispatch('useNextLoadCaptureMode');
-        message.info(`远程加载图片模式已切换至: ${store.state.configuration.loadCaptureMode}`);
+        configurationStore.useNextLoadCaptureMode();
+        message.info(`远程加载图片模式已切换至: ${configurationStore.loadCaptureMode}`);
     },
     { target: refCanvas.value }
 );

@@ -1,5 +1,4 @@
-import { Module } from 'vuex';
-import { IRootState } from '.';
+import { defineStore } from 'pinia';
 import Jimp from 'jimp/browser/lib/jimp';
 import Axios, { AxiosError } from 'axios';
 import { message } from 'ant-design-vue';
@@ -29,64 +28,53 @@ export function readFileSync(file: File): Promise<ArrayBuffer> {
     });
 }
 
-const Capture: Module<ICaptureState, IRootState> = {
-    state: {
+export const useCaptureStore = defineStore('capture', {
+    state: (): ICaptureState => ({
         tabIndex: 1,
         captures: [],
         activeKey: 'blank',
         loading: false,
-    },
+    }),
     getters: {
-        activeIndex: state => {
-            return state.captures.findIndex(capture => capture.key === state.activeKey);
+        activeIndex(): number {
+            return this.captures.findIndex(capture => capture.key === this.activeKey);
         },
-        activeJimp: state => {
-            return state.captures.find(capture => capture.key === state.activeKey)?.jimp;
-        },
-    },
-    mutations: {
-        setCapture: (state, { key, jimp, base64 }: { key?: string; jimp: Jimp; base64: string }) => {
-            key = key ?? state.activeKey;
-            const index = state.captures.findIndex(capture => capture.key === key);
-            if (index > -1) {
-                state.captures[index] = { ...state.captures[index], jimp, base64 };
-            }
-        },
-        setActiveKey: (state, key: string) => {
-            state.activeKey = key;
-        },
-        addCapture: (state, capture: ICapture) => {
-            state.tabIndex++;
-            state.captures.push(capture);
-        },
-        removeCapture: (state, key?: string) => {
-            if (key) {
-                state.captures = state.captures.filter(capture => capture.key !== key);
-            } else {
-                state.captures = [];
-            }
-        },
-        setCaptureLoading: (state, loading: boolean) => {
-            state.loading = loading;
+        activeJimp(): Jimp {
+            return this.captures.find(capture => capture.key === this.activeKey)!.jimp;
         },
     },
     actions: {
-        addCapture: ({ state, commit }, { jimp, base64 }: { jimp: Jimp; base64: string }) => {
+        setCapture(jimp: Jimp, base64: string, key?: string) {
+            key = key ?? this.activeKey;
+            const index = this.captures.findIndex(capture => capture.key === key);
+            if (index > -1) {
+                this.captures[index] = { ...this.captures[index], jimp, base64 };
+            }
+        },
+        removeCapture(key?: string) {
+            if (key) {
+                this.captures = this.captures.filter(capture => capture.key !== key);
+            } else {
+                this.captures = [];
+            }
+        },
+        addCapture(jimp: Jimp, base64: string) {
             const capture: ICapture = {
-                key: `tab${state.tabIndex}`,
-                title: `图片${state.tabIndex}`,
+                key: `tab${this.tabIndex}`,
+                title: `图片${this.tabIndex}`,
                 jimp: jimp,
                 base64: base64,
             };
-            commit('addCapture', capture);
+            this.tabIndex++;
+            this.captures.push(capture);
             return capture;
         },
-        addCaptureFromLink: async ({ state, dispatch }, link: string) => {
+        async addCaptureFromLink(link: string) {
             try {
                 const resp = await Axios.get<ArrayBuffer>(link, { responseType: 'arraybuffer' });
                 const jimp = await Jimp.read(Buffer.from(resp.data));
                 const base64 = await jimp.getBase64Async(Jimp.MIME_PNG);
-                const capture = await dispatch('addCapture', { jimp, base64 });
+                const capture = this.addCapture(jimp, base64);
                 return capture.key;
             } catch (e) {
                 if (e && (e as AxiosError).response) {
@@ -98,18 +86,18 @@ const Capture: Module<ICaptureState, IRootState> = {
                 } else {
                     message.error('加载图片失败: 未知错误');
                 }
-                return state.activeKey;
+                return this.activeKey;
             }
         },
-        addCaptureFromFile: async ({ dispatch }, file: File) => {
+        async addCaptureFromFile(file: File) {
             const buffer = await readFileSync(file);
             const jimp = await Jimp.read(Buffer.from(buffer));
             const base64 = await jimp.getBase64Async(Jimp.MIME_PNG);
-            const capture = await dispatch('addCapture', { jimp, base64 });
+            const capture = this.addCapture(jimp, base64);
             return capture.key;
         },
-        rotateCapture: async ({ commit, getters }) => {
-            const activeJimp = getters.activeJimp;
+        async rotateCapture() {
+            const activeJimp = this.activeJimp;
 
             const bData = activeJimp.bitmap.data;
             const bDataLength = bData.length;
@@ -133,9 +121,7 @@ const Capture: Module<ICaptureState, IRootState> = {
 
             const base64 = await activeJimp.getBase64Async(Jimp.MIME_PNG);
 
-            commit('setCapture', { jimp: activeJimp, base64 });
+            this.setCapture(activeJimp, base64);
         },
     },
-};
-
-export default Capture;
+});

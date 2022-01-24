@@ -1,5 +1,6 @@
-import { Module } from 'vuex';
-import { IRootState } from '.';
+import { defineStore } from 'pinia';
+import { useConfigurationStore } from './Configuration';
+import { useCaptureStore } from './Capture';
 import Jimp from 'jimp/browser/lib/jimp';
 import { ColorMode } from './Configuration';
 
@@ -24,56 +25,59 @@ export function displayColor(c: number, mode: ColorMode): string {
     }
 }
 
-const Coordinate: Module<ICoordinateState, IRootState> = {
-    state: {
+export const useCoordinateStore = defineStore('coordinate', {
+    state: (): ICoordinateState => ({
         x: -1,
         y: -1,
-    },
+    }),
     getters: {
-        c:
-            (_state, getters, rootState, _rootGetters) =>
-            (mode: ColorMode = rootState.configuration.colorMode) => {
-                const cNative: number = getters.cNative;
-                if (cNative === -1) {
-                    return '-1';
-                }
-                const display = displayColor(cNative, mode);
-                return display;
-            },
-        cNative: (state, _getters, _rootState, rootGetters) => {
-            if (state.x > -1 && state.y > -1) {
-                const jimp: Jimp = rootGetters.activeJimp;
-                const c = jimp.getPixelColor(state.x, state.y);
+        cNative(): number {
+            const capture = useCaptureStore();
+            if (this.x > -1 && this.y > -1) {
+                const jimp = capture.activeJimp;
+                const c = jimp.getPixelColor(this.x, this.y);
                 return c;
             } else {
                 return -1;
             }
         },
-        xyLegal: (state, _getters, _rootState, rootGetters) => (x?: number, y?: number) => {
-            x = x ?? state.x;
-            y = y ?? state.y;
-            if (x < 0 || y < 0) {
-                return false;
-            } else {
-                const jimp: Jimp = rootGetters.activeJimp;
-                if (!jimp || x > jimp.bitmap.width - 1 || y > jimp.bitmap.height - 1) {
+        c(): () => string {
+            const configuration = useConfigurationStore();
+            return (mode: ColorMode = configuration.colorMode) => {
+                const cNative: number = this.cNative;
+                if (cNative === -1) {
+                    return '-1';
+                }
+                const display = displayColor(cNative, mode);
+                return display;
+            };
+        },
+        xyLegal(): (x?: number, y?: number) => boolean {
+            const capture = useCaptureStore();
+            return (x?: number, y?: number) => {
+                x = x ?? this.x;
+                y = y ?? this.y;
+                if (x < 0 || y < 0) {
                     return false;
                 } else {
-                    return true;
+                    const jimp: Jimp = capture.activeJimp;
+                    if (!jimp || x > jimp.bitmap.width - 1 || y > jimp.bitmap.height - 1) {
+                        return false;
+                    } else {
+                        return true;
+                    }
                 }
-            }
+            };
         },
     },
-    mutations: {
-        updateCoordinate: (state, payload: { x: number; y: number }) => {
-            state.x = payload.x;
-            state.y = payload.y;
+    actions: {
+        updateCoordinate(x: number, y: number) {
+            this.x = x;
+            this.y = y;
         },
-        resetCoordinate: state => {
-            state.x = -1;
-            state.y = -1;
+        resetCoordinate() {
+            this.x = -1;
+            this.y = -1;
         },
     },
-};
-
-export default Coordinate;
+});

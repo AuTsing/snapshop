@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { useStore } from '../store';
+import { useRecordStore } from '../store/Record';
+import { useAreaStore } from '../store/Area';
 import { IRecord } from '../store/Record';
 import { useControlCv } from '../plugins/ControlCv';
 import { displayColor } from '../store/Coordinate';
@@ -8,7 +9,8 @@ import { ColorMode } from '../store/Configuration';
 
 import { CopyOutlined, DeleteOutlined } from '@ant-design/icons-vue';
 
-const store = useStore();
+const recordStore = useRecordStore();
+const areaStore = useAreaStore();
 const controlCv = useControlCv();
 
 const pointsColumns = [
@@ -21,13 +23,13 @@ const areaColumns = [
     { title: '操作', dataIndex: 'action', width: '50%', align: 'center' },
 ];
 
-const records = computed(() => store.state.record.records);
+const records = computed(() => recordStore.records);
 const areas = computed(() => {
-    const { x1, y1, x2, y2 } = store.state.area;
+    const { x1, y1, x2, y2 } = areaStore;
     if (x1 === -1 && y1 === -1 && x2 === -1 && y2 === -1) {
         return [];
     } else {
-        return [store.state.area];
+        return [areaStore];
     }
 });
 
@@ -38,13 +40,13 @@ const handleClickCopyRecord = (record: IRecord) => {
     controlCv.ctrlC(`${record.x},${record.y},${record.c}`);
 };
 const handleClickRemoveRecord = (record: IRecord) => {
-    store.commit('removeRecord', record.key);
+    recordStore.removeRecord(record.key);
 };
 const handleClickCopyArea = (record: { x1: number; y1: number; x2: number; y2: number }) => {
     controlCv.ctrlC(`${record.x1},${record.y1},${record.x2},${record.y2}`);
 };
 const handleClickResetArea = () => {
-    store.commit('resetArea');
+    areaStore.resetArea();
 };
 </script>
 

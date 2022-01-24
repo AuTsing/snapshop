@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { useStore } from '../store';
+import { storeToRefs } from 'pinia';
+import { useCoordinateStore } from '../store/Coordinate';
 
-const store = useStore();
+const coordinateStore = useCoordinateStore();
 
-const x = computed(() => store.state.coordinate.x);
-const y = computed(() => store.state.coordinate.y);
-const c = computed(() => store.getters.c());
+const { x, y } = storeToRefs(coordinateStore);
+const c = computed(() => coordinateStore.c());
 </script>
 
 <template>
