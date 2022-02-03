@@ -35,6 +35,9 @@ const handleChangeTolerance = (value: number) => {
     fontLabStore.tolerance = value;
     fontLabStore.updateFontLabPreview();
 };
+const handleChangeCastMode = () => {
+    fontLabStore.updateFontLabPreview();
+};
 const handleBlurCustomCast = () => {
     if (!customCast.value) {
         return;
@@ -48,6 +51,7 @@ const handleBlurCustomCast = () => {
     const cast1 = casts[1].toUpperCase();
     const cast2 = casts[2].toUpperCase();
     customCast.value = `${cast1} , ${cast2}`;
+    fontLabStore.updateFontLabPreview();
 };
 const handleClickCopyCast = () => {
     let copyCast: string | undefined;
@@ -165,7 +169,7 @@ onMounted(() => {
                 <a-slider v-model:value="tolerance" @afterChange="handleChangeTolerance" />
                 <a-divider orientation="left">偏色</a-divider>
                 <a-input-group compact>
-                    <a-select v-model:value="castMode" style="width: 40%">
+                    <a-select v-model:value="castMode" style="width: 40%" @change="handleChangeCastMode">
                         <a-select-option :value="ICastMode.auto">{{ ICastMode.auto }}</a-select-option>
                         <a-select-option :value="ICastMode.custom">{{ ICastMode.custom }}</a-select-option>
                     </a-select>

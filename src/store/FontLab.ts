@@ -121,7 +121,7 @@ export const useFontLabStore = defineStore('fontLab', {
             const area = useAreaStore();
             const capture = useCaptureStore();
 
-            if (record.records.length === 0 || Object.values(area).some(p => p === -1)) {
+            if ((record.records.length === 0 && this.customCast === '') || Object.values(area).some(p => p === -1)) {
                 this.previewJimp = undefined;
                 this.previewBase64 = '';
                 return;
