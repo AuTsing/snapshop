@@ -95,8 +95,8 @@ export const useFontLabStore = defineStore('fontLab', {
             if (this.customCast === '') {
                 return { r: [], g: [], b: [] } as TCastRgb;
             }
-            const hex1 = parseInt(this.customCast.slice(0, 6), 16);
-            const hex2 = parseInt(this.customCast.slice(-6), 16);
+            const hex1 = parseInt(this.customCast.slice(0, 6) + '00', 16);
+            const hex2 = parseInt(this.customCast.slice(-6) + '00', 16);
             const rgba1 = Jimp.intToRGBA(hex1);
             const rgba2 = Jimp.intToRGBA(hex2);
             const customCastRgb: TCastRgb = {
