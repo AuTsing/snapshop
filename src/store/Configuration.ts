@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import { useDisk } from '../plugins/Disk';
-import { UsableApis, PluginName } from '../plugins/Axios';
+import { useLoadCaptureApi } from './LoadCaptureApi';
 
 export enum ColorMode {
     dec = '十进制',
@@ -14,11 +14,10 @@ export enum LoadCaptureMode {
     fromApi1 = '从接口1加载',
     fromApi2 = '从接口2加载',
     fromApi3 = '从接口3加载',
-    fromTouchsrpite = '从触动插件接口加载',
 }
 
 export interface IConfigurationState {
-    loadCaptureMode: LoadCaptureMode;
+    loadCaptureMode: string;
     loadCaptureApi1: string;
     loadCaptureApi2: string;
     loadCaptureApi3: string;
@@ -52,10 +51,9 @@ export const useConfigurationStore = defineStore('configuration', {
                     return this.loadCaptureApi2;
                 case LoadCaptureMode.fromApi3:
                     return this.loadCaptureApi3;
-                case LoadCaptureMode.fromTouchsrpite:
-                    return UsableApis.find(api => api.pluginName === PluginName.touchsrpite)!.baseURL + 'snap';
                 default:
-                    return '';
+                    const loadCaptureApiStore = useLoadCaptureApi();
+                    return loadCaptureApiStore.snapUrl(this.loadCaptureMode);
             }
         },
     },
@@ -64,14 +62,13 @@ export const useConfigurationStore = defineStore('configuration', {
             this.$patch(defaultConfiguration);
         },
         useNextLoadCaptureMode() {
-            const modes = [LoadCaptureMode.fromApi1, LoadCaptureMode.fromApi2, LoadCaptureMode.fromApi3];
-            let nextMode: LoadCaptureMode;
-            if (modes.includes(this.loadCaptureMode)) {
-                nextMode = modes[modes.indexOf(this.loadCaptureMode) + 1] ?? LoadCaptureMode.fromApi1;
-            } else {
-                nextMode = LoadCaptureMode.fromApi1;
-            }
-            this.loadCaptureMode = nextMode;
+            const loadCaptureApiStore = useLoadCaptureApi();
+
+            const internalModes: string[] = [LoadCaptureMode.fromApi1, LoadCaptureMode.fromApi2, LoadCaptureMode.fromApi3];
+            const externalModes: string[] = loadCaptureApiStore.apis.map(api => api.title);
+            const modes: string[] = internalModes.concat(externalModes);
+
+            this.loadCaptureMode = modes[modes.indexOf(this.loadCaptureMode) + 1] ?? modes[0];
         },
     },
 });
