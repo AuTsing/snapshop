@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import { useCoordinateStore } from '../store/Coordinate';
 import { useRecordStore } from '../store/Record';
 import { useAreaStore } from '../store/Area';
 import { useCodeStore } from '../store/Code';
 import { useConfigurationStore } from '../store/Configuration';
+import { useLoadCaptureApiStore } from '../store/LoadCaptureApi';
 import { onKeyStroke } from '@vueuse/core';
 import { useControlCv } from '../plugins/ControlCv';
 import { message } from 'ant-design-vue';
@@ -17,6 +18,7 @@ const recordStore = useRecordStore();
 const areaStore = useAreaStore();
 const codeStore = useCodeStore();
 const configurationStore = useConfigurationStore();
+const loadCaptureApiStore = useLoadCaptureApiStore();
 const controlCv = useControlCv();
 
 const refCanvas = ref();
@@ -152,6 +154,12 @@ onKeyStroke(
     },
     { target: refCanvas.value }
 );
+
+onMounted(() => {
+    if (!loadCaptureApiStore.loadedApis && !loadCaptureApiStore.loadingApis) {
+        loadCaptureApiStore.loadApis();
+    }
+});
 </script>
 
 <template>

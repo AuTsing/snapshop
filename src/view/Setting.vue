@@ -1,26 +1,23 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, reactive, ref, toRaw } from 'vue';
 import { useConfigurationStore, defaultConfiguration, IConfigurationState, LoadCaptureMode, ColorMode } from '../store/Configuration';
-import { useLoadCaptureApi } from '../store/LoadCaptureApi';
+import { useLoadCaptureApiStore } from '../store/LoadCaptureApi';
 import { debouncedWatch } from '@vueuse/core';
 import ResetButtonVue from '../shared/ResetButton.vue';
-
-import ApiSearcher from '../workers/ApiSearcher?worker&inline';
 
 import { AppstoreAddOutlined, EllipsisOutlined } from '@ant-design/icons-vue';
 import { message } from 'ant-design-vue';
 
 const configurationStore = useConfigurationStore();
-const loadCaptureApiStore = useLoadCaptureApi();
+const loadCaptureApiStore = useLoadCaptureApiStore();
 
 const configurationModelRef = reactive<IConfigurationState>(Object.assign({}, configurationStore.$state));
-const loadingOtherCaptureMode = ref<boolean>(false);
+const loadingOtherCaptureMode = computed<boolean>(() => loadCaptureApiStore.loadingApis);
 const usableLoadCaptureMode = computed<{ value: string }[]>(() => {
     const modes: { value: string }[] = [{ value: LoadCaptureMode.fromApi1 }, { value: LoadCaptureMode.fromApi2 }, { value: LoadCaptureMode.fromApi3 }];
     const externalModes = loadCaptureApiStore.apis.map(api => ({ value: api.title }));
     return modes.concat(externalModes);
 });
-const apiSearcher = ref<Worker>();
 
 const handleClickResetConfiguration = () => {
     Object.assign(configurationModelRef, defaultConfiguration);
@@ -38,24 +35,9 @@ debouncedWatch(
 );
 
 onMounted(() => {
-    loadingOtherCaptureMode.value = true;
-    apiSearcher.value = new ApiSearcher();
-    apiSearcher.value.onmessage = ev => {
-        if (ev.data === 'done') {
-            loadingOtherCaptureMode.value = false;
-            return;
-        }
-
-        if (ev.data.title && ev.data.url) {
-            loadCaptureApiStore.addApi(ev.data.title, ev.data.url);
-            return;
-        }
-    };
-});
-
-onUnmounted(() => {
-    apiSearcher.value?.terminate();
-    apiSearcher.value = undefined;
+    if (!loadCaptureApiStore.loadingApis) {
+        loadCaptureApiStore.loadApis();
+    }
 });
 </script>
 

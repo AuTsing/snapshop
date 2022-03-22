@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import { useDisk } from '../plugins/Disk';
-import { useLoadCaptureApi } from './LoadCaptureApi';
+import { useLoadCaptureApiStore } from './LoadCaptureApi';
 
 export enum ColorMode {
     dec = '十进制',
@@ -56,7 +56,7 @@ export const useConfigurationStore = defineStore('configuration', {
                 case LoadCaptureMode.fromApi3:
                     return this.loadCaptureApi3;
                 default:
-                    const loadCaptureApiStore = useLoadCaptureApi();
+                    const loadCaptureApiStore = useLoadCaptureApiStore();
                     return loadCaptureApiStore.snapUrl(this.loadCaptureMode);
             }
         },
@@ -66,7 +66,7 @@ export const useConfigurationStore = defineStore('configuration', {
             this.$patch(defaultConfiguration);
         },
         useNextLoadCaptureMode() {
-            const loadCaptureApiStore = useLoadCaptureApi();
+            const loadCaptureApiStore = useLoadCaptureApiStore();
 
             const internalModes: string[] = [LoadCaptureMode.fromApi1, LoadCaptureMode.fromApi2, LoadCaptureMode.fromApi3];
             const externalModes: string[] = loadCaptureApiStore.apis.map(api => api.title);
