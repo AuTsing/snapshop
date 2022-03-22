@@ -35,12 +35,16 @@ export const defaultConfiguration: IConfigurationState = {
 };
 
 export const useConfigurationStore = defineStore('configuration', {
-    state: (): IConfigurationState => {
-        const defaultConfigurationCopy = Object.assign({}, defaultConfiguration);
-        const state = useDisk().useStorage('configuration', defaultConfigurationCopy);
-        Object.assign(defaultConfigurationCopy, state.value);
-        Object.assign(state.value, defaultConfigurationCopy);
-        return state.value;
+    state: () => {
+        const disk = useDisk();
+        return {
+            loadCaptureMode: disk.useStorage('loadCaptureMode', defaultConfiguration.loadCaptureMode),
+            loadCaptureApi1: disk.useStorage('loadCaptureApi1', defaultConfiguration.loadCaptureApi1),
+            loadCaptureApi2: disk.useStorage('loadCaptureApi2', defaultConfiguration.loadCaptureApi2),
+            loadCaptureApi3: disk.useStorage('loadCaptureApi3', defaultConfiguration.loadCaptureApi3),
+            colorMode: disk.useStorage('colorMode', defaultConfiguration.colorMode),
+            showSameCoordinate: disk.useStorage('showSameCoordinate', defaultConfiguration.showSameCoordinate),
+        };
     },
     getters: {
         usingApi(): string {

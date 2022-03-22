@@ -1,47 +1,33 @@
-import { App, Plugin, getCurrentInstance, watch } from 'vue';
-import { MaybeRef, RemovableRef, StorageLike, useStorage } from '@vueuse/core';
-import { VscodeMessageCommand, useVscode, VscodeMessage } from './Vscode';
+import { App, Plugin, getCurrentInstance } from 'vue';
+import { Awaitable, MaybeRef, RemovableRef, StorageLikeAsync, useStorage, useStorageAsync } from '@vueuse/core';
+import { VscodeMessageCommand, useVscode, VscodeMessage, Vscode } from './Vscode';
 
-class VscodeStorage implements StorageLike {
-    private readonly vscode = useVscode();
+export class VscodeStorage implements StorageLikeAsync {
+    private readonly vscode: Vscode;
 
     constructor() {
-        const state = this.vscode.getState();
-        if (state === undefined) {
-            this.vscode.setState({});
-        }
+        this.vscode = useVscode();
     }
 
-    getItem(key: string): string | null {
-        const state = this.vscode.getState();
-        return state[key];
+    getItem(key: string): Awaitable<any | null> {
+        return new Promise((resolve, reject) => {
+            const getStateHandler = (e: MessageEvent<VscodeMessage>) => {
+                if (e.data.command === VscodeMessageCommand.getItem && e.data.data.key === key) {
+                    resolve(e.data.data.value);
+                    removeEventListener('message', getStateHandler);
+                }
+            };
+            addEventListener('message', getStateHandler);
+            this.vscode.postMessage({ command: VscodeMessageCommand.getItem, data: { key } });
+        });
     }
 
-    setItem(key: string, value: string): void {
-        const state = this.vscode.getState();
-        state[key] = value;
-        this.vscode.setState(state);
+    setItem(key: string, value: string): Awaitable<void> {
+        return this.vscode.postMessage({ command: VscodeMessageCommand.setItem, data: { key, value } });
     }
 
-    removeItem(key: string): void {
-        const state = this.vscode.getState();
-        state[key] = null;
-        this.vscode.setState(state);
-    }
-
-    initState(key: string, state: RemovableRef<any>): void {
-        this.vscode.postMessage({ command: VscodeMessageCommand.getState, data: {} });
-        const getStateHandler = (e: MessageEvent<VscodeMessage>) => {
-            if (e.data.command === VscodeMessageCommand.getState) {
-                const vscodeState = this.vscode.getState();
-                Object.assign(vscodeState, e.data.data);
-                this.vscode.setState(vscodeState);
-                state.value = Object.assign(state.value, JSON.parse(vscodeState[key]));
-                watch(state, () => this.vscode.postMessage({ command: VscodeMessageCommand.setState, data: this.vscode.getState() }), { deep: true });
-                removeEventListener('message', getStateHandler);
-            }
-        };
-        addEventListener('message', getStateHandler);
+    removeItem(key: string): Awaitable<void> {
+        return this.vscode.postMessage({ command: VscodeMessageCommand.setItem, data: { key, value: undefined } });
     }
 }
 
@@ -52,12 +38,7 @@ class Disk {
     private constructor() {
         const env = import.meta.env.VITE_APP_ENV;
         if (env === 'vscode') {
-            this.useStorage = <T>(key: string, initialValue: MaybeRef<T>) => {
-                const vscodeStorage = new VscodeStorage();
-                const state = useStorage(key, initialValue, vscodeStorage);
-                vscodeStorage.initState(key, state);
-                return state;
-            };
+            this.useStorage = <T>(key: string, initialValue: MaybeRef<T>) => useStorageAsync(key, initialValue, new VscodeStorage());
         } else {
             this.useStorage = useStorage;
         }

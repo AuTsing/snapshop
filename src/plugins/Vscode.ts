@@ -1,8 +1,8 @@
 import { App, Plugin, getCurrentInstance } from 'vue';
 
 export enum VscodeMessageCommand {
-    getState = 'getState',
-    setState = 'setState',
+    getItem = 'getItem',
+    setItem = 'setItem',
 }
 
 export interface VscodeMessage {
@@ -10,7 +10,7 @@ export interface VscodeMessage {
     data: any;
 }
 
-class Vscode {
+export class Vscode {
     private static instance: Vscode;
     public readonly setState: VsCodeApi['setState'];
     public readonly getState: VsCodeApi['getState'];

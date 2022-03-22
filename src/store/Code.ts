@@ -24,12 +24,17 @@ export const defaultCode: ICodeState = {
 };
 
 export const useCodeStore = defineStore('code', {
-    state: (): ICodeState => {
-        const defaultCodeCopy = Object.assign({}, defaultCode);
-        const state = useDisk().useStorage('code', defaultCodeCopy);
-        Object.assign(defaultCodeCopy, state.value);
-        Object.assign(state.value, defaultCodeCopy);
-        return state.value;
+    state: () => {
+        const disk = useDisk();
+        return {
+            template1: disk.useStorage('template1', defaultCode.template1),
+            template2: disk.useStorage('template2', defaultCode.template2),
+            template3: disk.useStorage('template3', defaultCode.template3),
+            template4: disk.useStorage('template4', defaultCode.template4),
+            template5: disk.useStorage('template5', defaultCode.template5),
+            regexp: disk.useStorage('regexp', defaultCode.regexp),
+            regexpReplacement: disk.useStorage('regexpReplacement', defaultCode.regexpReplacement),
+        };
     },
     actions: {
         resetCode() {
