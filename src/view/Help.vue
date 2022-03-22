@@ -67,8 +67,10 @@ const keywords = [
         </a-typography-paragraph>
         <a-typography-title :level="2">关键字</a-typography-title>
         <a-typography-paragraph style="width: 70%">
-            在模板中填入关键字，生成代码时会自动替换为对应变量，如果有高级需求，请填写正则表达式进行替换。
+            在 模板 中填入关键字，生成代码时会自动替换为对应变量，如果有高级需求，请填写正则表达式进行替换。
         </a-typography-paragraph>
+        <a-typography-paragraph style="width: 70%"> $point[n] 关键字 在 模板 中， n 需替换为对应有效点的序号。 </a-typography-paragraph>
+        <a-typography-paragraph style="width: 70%"> $point[n] 关键字 在 points构成定义 中，无需替换。 </a-typography-paragraph>
         <a-typography-paragraph style="width: 50%">
             <a-table :columns="keywordsColumns" :data-source="keywords" bordered size="small" :pagination="false"></a-table>
         </a-typography-paragraph>

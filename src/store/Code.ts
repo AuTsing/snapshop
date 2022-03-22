@@ -11,6 +11,7 @@ export interface ICodeState {
     template5: string;
     regexp: string;
     regexpReplacement: string;
+    pointDefinition: string;
 }
 
 export const defaultCode: ICodeState = {
@@ -21,6 +22,7 @@ export const defaultCode: ICodeState = {
     template5: '',
     regexp: '',
     regexpReplacement: '',
+    pointDefinition: '{$point[n][x],$point[n][y],$point[n][c]}',
 };
 
 export const useCodeStore = defineStore('code', {
@@ -34,6 +36,7 @@ export const useCodeStore = defineStore('code', {
             template5: disk.useStorage('template5', defaultCode.template5),
             regexp: disk.useStorage('regexp', defaultCode.regexp),
             regexpReplacement: disk.useStorage('regexpReplacement', defaultCode.regexpReplacement),
+            pointDefinition: disk.useStorage('pointDefinition', defaultCode.pointDefinition),
         };
     },
     actions: {
@@ -44,10 +47,18 @@ export const useCodeStore = defineStore('code', {
             const record = useRecordStore();
             const area = useAreaStore();
 
-            const recordsValid = record.records.filter(record => record.cNative !== -1);
-            const points = recordsValid.map(record => `{${record.x},${record.y},${record.c}}`).join(',');
-            const delta = recordsValid
-                .map(record => `${record.x - recordsValid[0].x}|${record.y - recordsValid[0].y}|${record.c}`)
+            const validRecords = record.records.filter(record => record.cNative !== -1);
+            const points = validRecords
+                .map(record =>
+                    this.pointDefinition
+                        .replace(/\$point\[n\]\[x\]/g, record.x.toString())
+                        .replace(/\$point\[n\]\[y\]/g, record.y.toString())
+                        .replace(/\$point\[n\]\[c\]/g, record.c.toString())
+                )
+                .join(',');
+
+            const delta = validRecords
+                .map(record => `${record.x - validRecords[0].x}|${record.y - validRecords[0].y}|${record.c}`)
                 .slice(1)
                 .join(',');
             const areaJoined = `${area.x1},${area.y1},${area.x2},${area.y2}`;
@@ -58,12 +69,12 @@ export const useCodeStore = defineStore('code', {
                 .replace(/\$points/g, points)
                 .replace(/\$delta/g, delta)
                 .replace(/\$area/g, areaJoined)
-                .replace(/\$point\[([1-9])\]\[x\]/g, (_str, i) => recordsValid[parseInt(i) - 1]?.x.toString() ?? '')
-                .replace(/\$point\[([1-9])\]\[y\]/g, (_str, i) => recordsValid[parseInt(i) - 1]?.y.toString() ?? '')
-                .replace(/\$point\[([1-9])\]\[c\]/g, (_str, i) => recordsValid[parseInt(i) - 1]?.c.toString() ?? '')
+                .replace(/\$point\[([1-9])\]\[x\]/g, (_str, i) => validRecords[parseInt(i) - 1]?.x.toString() ?? '')
+                .replace(/\$point\[([1-9])\]\[y\]/g, (_str, i) => validRecords[parseInt(i) - 1]?.y.toString() ?? '')
+                .replace(/\$point\[([1-9])\]\[c\]/g, (_str, i) => validRecords[parseInt(i) - 1]?.c.toString() ?? '')
                 .replace(
                     /\$point\[([1-9])\]/g,
-                    (_str, i) => `${recordsValid[parseInt(i) - 1]?.x ?? ''},${recordsValid[parseInt(i) - 1]?.y ?? ''},${recordsValid[parseInt(i) - 1]?.c ?? ''}`
+                    (_str, i) => `${validRecords[parseInt(i) - 1]?.x ?? ''},${validRecords[parseInt(i) - 1]?.y ?? ''},${validRecords[parseInt(i) - 1]?.c ?? ''}`
                 );
 
             if (this.regexp) {

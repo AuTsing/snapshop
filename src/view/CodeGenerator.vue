@@ -51,6 +51,9 @@ debouncedWatch(
                 <a-input v-model:value="codeModelRef.regexpReplacement" style="width: 25%" placeholder="替换为" />
             </a-input-group>
         </a-form-item>
+        <a-form-item label="points构成定义">
+            <a-input v-model:value="codeModelRef.pointDefinition" style="width: 50%" />
+        </a-form-item>
         <a-form-item>
             <ResetButtonVue :handleClick="handleClickResetCode" />
         </a-form-item>
