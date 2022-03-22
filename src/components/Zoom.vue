@@ -22,6 +22,7 @@ const zoomCaptureJimp = ref<Jimp | undefined>();
 const zoomCaptureBase64 = ref<string>('');
 const sameCoordinates = ref<ICoordinateState[]>([]);
 const { x, y } = storeToRefs(coordinateStore);
+const { showSameCoordinate } = storeToRefs(configurationStore);
 
 const sameCoordinateStyle = (coor: ICoordinateState): StyleValue => {
     const left = coor.x * zoomDisplayRatio;
@@ -31,8 +32,6 @@ const sameCoordinateStyle = (coor: ICoordinateState): StyleValue => {
         top: `${top}px`,
     };
 };
-
-const arr: number[] = [];
 
 watch([x, y], async () => {
     const activeJimp = captureStore.activeJimp;
@@ -59,35 +58,40 @@ watch([x, y], async () => {
         zoomCaptureBase64.value = defaultPreview;
     }
 });
-if (configurationStore.showSameCoordinate) {
-    watch(zoomCaptureJimp, () => {
-        const jimp = zoomCaptureJimp.value;
-        if (!jimp) {
-            sameCoordinates.value = [];
-            return;
-        }
-        const c = jimp.getPixelColor(10, 10);
-        const same: ICoordinateState[] = [];
 
-        jimp.scan(0, 0, jimp.bitmap.width, jimp.bitmap.height, (sx, sy) => {
-            if (sx === 10 && sy === 10) {
-                return;
-            }
-            const sc = jimp.getPixelColor(sx, sy);
-            if (sc === c) {
-                same.push({ x: sx, y: sy });
-            }
-        });
-        sameCoordinates.value = same;
-    });
-}
+watch(
+    showSameCoordinate,
+    () => {
+        if (configurationStore.showSameCoordinate) {
+            watch(zoomCaptureJimp, () => {
+                const jimp = zoomCaptureJimp.value;
+                if (!jimp) {
+                    sameCoordinates.value = [];
+                    return;
+                }
+                const c = jimp.getPixelColor(10, 10);
+                const same: ICoordinateState[] = [];
+
+                jimp.scan(0, 0, jimp.bitmap.width, jimp.bitmap.height, (sx, sy) => {
+                    if (sx === 10 && sy === 10) {
+                        return;
+                    }
+                    const sc = jimp.getPixelColor(sx, sy);
+                    if (sc === c) {
+                        same.push({ x: sx, y: sy });
+                    }
+                });
+                sameCoordinates.value = same;
+            });
+        }
+    },
+    { immediate: true }
+);
 </script>
 
 <template>
     <div class="zoom-container">
         <div class="zoom-cursor zoom-cursor-red"></div>
-        <!-- <div class="zoom-cursor zoom-cursor-green"></div> -->
-        <!-- <div class="zoom-cursor zoom-cursor-blue"></div> -->
         <div v-for="coor in sameCoordinates" class="zoom-cover" :style="sameCoordinateStyle(coor)"></div>
         <img class="zoom-content" :src="zoomCaptureBase64" alt="" :draggable="false" />
     </div>
