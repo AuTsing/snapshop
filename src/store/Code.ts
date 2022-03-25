@@ -77,8 +77,9 @@ export const useCodeStore = defineStore('code', {
                     (_str, i) => `${validRecords[parseInt(i) - 1]?.x ?? ''},${validRecords[parseInt(i) - 1]?.y ?? ''},${validRecords[parseInt(i) - 1]?.c ?? ''}`
                 );
 
-            if (this.regexp) {
-                const regexp = new RegExp(this.regexp);
+            const regexps = this.regexp.match(/^\/(.*)\/([a-z]*)$/);
+            if (regexps && regexps.length > 0) {
+                const regexp = new RegExp(regexps[1], regexps[2]);
                 code = code.replace(regexp, this.regexpReplacement);
             }
 
