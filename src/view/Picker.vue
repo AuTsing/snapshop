@@ -112,6 +112,14 @@ onKeyStroke(
     { target: refCanvas.value }
 );
 onKeyStroke(
+    ['c', 'C'],
+    e => {
+        e.preventDefault();
+        recordStore.refetchRecord();
+    },
+    { target: refCanvas.value }
+);
+onKeyStroke(
     ['f', 'F', 'g', 'G', 'h', 'H', 'v', 'V', 'b', 'B'],
     e => {
         e.preventDefault();

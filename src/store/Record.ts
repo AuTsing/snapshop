@@ -1,6 +1,9 @@
 import { defineStore } from 'pinia';
 import { message } from 'ant-design-vue';
 import 'ant-design-vue/es/message/style/index';
+import { useCaptureStore } from './Capture';
+import { useConfigurationStore } from './Configuration';
+import { displayColor } from './Coordinate';
 
 export interface IRecord {
     key: string;
@@ -45,6 +48,17 @@ export const useRecordStore = defineStore('record', {
             } else {
                 this.records = [];
             }
+        },
+        refetchRecord() {
+            this.records.forEach((record, index) => {
+                const capture = useCaptureStore();
+                const jimp = capture.activeJimp;
+                const cNative = jimp.getPixelColor(record.x, record.y);
+                const configuration = useConfigurationStore();
+                const mode = configuration.colorMode;
+                const c = displayColor(cNative, mode);
+                this.records[index] = { ...record, cNative, c };
+            });
         },
     },
 });
