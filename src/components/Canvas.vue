@@ -3,7 +3,6 @@ import { ref } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useCaptureStore } from '../store/Capture';
 import { useConfigurationStore } from '../store/Configuration';
-
 import {
     CloseCircleOutlined,
     MinusCircleOutlined,
@@ -13,6 +12,7 @@ import {
     CloudDownloadOutlined,
 } from '@ant-design/icons-vue';
 import { Empty, message } from 'ant-design-vue';
+import { Key } from 'ant-design-vue/es/_util/type';
 import PictureVue from './Picture.vue';
 import OpenerVue from './Opener.vue';
 
@@ -23,8 +23,8 @@ const refOpener = ref();
 const { activeKey, captures, loading: spinning } = storeToRefs(captureStore);
 let dragingTarget: EventTarget | null = null;
 
-const handleTabsChange = (key: string) => {
-    captureStore.activeKey = key;
+const handleTabsChange = (key: Key) => {
+    captureStore.activeKey = key.toString();
 };
 
 const handleClickLoad = async () => {

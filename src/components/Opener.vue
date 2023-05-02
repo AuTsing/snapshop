@@ -6,13 +6,14 @@ const captureStore = useCaptureStore();
 
 const refOpener = ref();
 
-const handleChangeFile = async (fileList: FileList) => {
-    const files = Array.from(fileList);
+const handleChangeFile = async (e: any) => {
+    const files = Array.from(e.target.files as FileList);
     captureStore.loading = true;
     for (const file of files) {
         const key = await captureStore.addCaptureFromFile(file);
         captureStore.activeKey = key;
     }
+    e.target.value = null;
     captureStore.loading = false;
 };
 const handleClickOpen = () => {
@@ -25,7 +26,7 @@ defineExpose({
 </script>
 
 <template>
-    <input ref="refOpener" type="file" multiple accept=".png,.jpg" style="display: none" @change="(e:any) => handleChangeFile(e.target.files)" />
+    <input ref="refOpener" type="file" multiple accept=".png,.jpg" style="display: none" @change="handleChangeFile" />
     <span @click="handleClickOpen"><slot></slot></span>
 </template>
 
