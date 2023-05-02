@@ -6,6 +6,7 @@ import { IRecord } from '../store/Record';
 import { useControlCv } from '../plugins/ControlCv';
 import { displayColor } from '../store/Coordinate';
 import { ColorMode } from '../store/Configuration';
+import { ColumnsType } from 'ant-design-vue/es/table';
 
 import { CopyOutlined, DeleteOutlined } from '@ant-design/icons-vue';
 
@@ -13,12 +14,12 @@ const recordStore = useRecordStore();
 const areaStore = useAreaStore();
 const controlCv = useControlCv();
 
-const pointsColumns = [
+const pointsColumns: ColumnsType = [
     { title: '坐标', dataIndex: 'xy', width: '33%', align: 'center' },
     { title: '颜色值', dataIndex: 'c', width: '33%', align: 'center' },
     { title: '操作', dataIndex: 'action', width: '34%', align: 'center' },
 ];
-const areaColumns = [
+const areaColumns: ColumnsType = [
     { title: '范围', dataIndex: 'area', width: '50%', align: 'center' },
     { title: '操作', dataIndex: 'action', width: '50%', align: 'center' },
 ];

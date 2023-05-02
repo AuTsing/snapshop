@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, reactive, ref, toRaw } from 'vue';
+import { computed, onMounted, reactive, toRaw } from 'vue';
 import { useConfigurationStore, defaultConfiguration, IConfigurationState, LoadCaptureMode, ColorMode } from '../store/Configuration';
 import { useLoadCaptureApiStore } from '../store/LoadCaptureApi';
 import { debouncedWatch } from '@vueuse/core';

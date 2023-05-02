@@ -17,6 +17,11 @@ export interface ICapture {
     base64: string;
 }
 
+export interface SnapshotCommand {
+    cmd: 'snapshot';
+    data: { success: boolean; message: string; file: number[] };
+}
+
 export function readFileSync(file: File): Promise<ArrayBuffer> {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -25,6 +30,51 @@ export function readFileSync(file: File): Promise<ArrayBuffer> {
         };
         reader.onerror = reject;
         reader.readAsArrayBuffer(file);
+    });
+}
+
+export async function readFileFromHttps(url: URL): Promise<ArrayBuffer> {
+    try {
+        return (await Axios.get(url.href, { responseType: 'arraybuffer' })).data;
+    } catch (e) {
+        if (e && (e as AxiosError).response) {
+            const buffer = (e as AxiosError<ArrayBuffer>).response?.data;
+            const msg = new TextDecoder().decode(buffer);
+            throw new Error(msg);
+        } else {
+            throw e;
+        }
+    }
+}
+
+export function readFileFromWs(url: URL): Promise<ArrayBuffer> {
+    return new Promise((resolve, reject) => {
+        const wsc = new WebSocket(url.href);
+        wsc.addEventListener('open', _ => {
+            const cmd: SnapshotCommand = {
+                cmd: 'snapshot',
+                data: {
+                    success: true,
+                    message: '',
+                    file: [],
+                },
+            };
+            wsc.send(JSON.stringify(cmd));
+        });
+        wsc.addEventListener('message', ev => {
+            const cmd = JSON.parse(ev.data) as SnapshotCommand;
+            if (cmd.data.success) {
+                const u8Array = Uint8Array.from(cmd.data.file);
+                resolve(u8Array.buffer);
+            } else {
+                reject(new Error(cmd.data.message));
+            }
+            wsc.close();
+        });
+        wsc.addEventListener('error', _ => {
+            wsc.close();
+            reject(new Error('无法连接 WS 服务器'));
+        });
     });
 }
 
@@ -71,8 +121,16 @@ export const useCaptureStore = defineStore('capture', {
         },
         async addCaptureFromLink(link: string) {
             try {
-                const resp = await Axios.get<ArrayBuffer>(link, { responseType: 'arraybuffer' });
-                const jimp = await Jimp.read(Buffer.from(resp.data));
+                const url = new URL(link);
+                let arrayBuffer: ArrayBuffer;
+                if (url.protocol === 'http:' || url.protocol === 'https:') {
+                    arrayBuffer = await readFileFromHttps(url);
+                } else if (url.protocol === 'ws:') {
+                    arrayBuffer = await readFileFromWs(url);
+                } else {
+                    throw new Error('不支持的接口协议 ' + url.protocol);
+                }
+                const jimp = await Jimp.read(Buffer.from(arrayBuffer));
                 const base64 = await jimp.getBase64Async(Jimp.MIME_PNG);
                 const capture = this.addCapture(jimp, base64);
                 return capture.key;
@@ -82,7 +140,7 @@ export const useCaptureStore = defineStore('capture', {
                     const msg = new TextDecoder().decode(buffer);
                     message.error('加载图片失败: ' + msg);
                 } else if (e instanceof Error) {
-                    message.error('加载图片失败: ' + e.message + ' 这有可能是没有配置CORS导致的');
+                    message.error('加载图片失败: ' + e.message);
                 } else {
                     message.error('加载图片失败: 未知错误');
                 }

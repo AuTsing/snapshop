@@ -1,8 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { storeToRefs } from 'pinia';
-import { useCaptureStore } from '../store/Capture';
-import { useConfigurationStore } from '../store/Configuration';
 import {
     CloseCircleOutlined,
     MinusCircleOutlined,
@@ -13,6 +11,9 @@ import {
 } from '@ant-design/icons-vue';
 import { Empty, message } from 'ant-design-vue';
 import { Key } from 'ant-design-vue/es/_util/type';
+
+import { useCaptureStore } from '../store/Capture';
+import { useConfigurationStore } from '../store/Configuration';
 import PictureVue from './Picture.vue';
 import OpenerVue from './Opener.vue';
 

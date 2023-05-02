@@ -31,4 +31,5 @@ import Axios from 'axios';
     await promiseTimeout(5000);
 
     self.postMessage('done');
+    self.close();
 })();
