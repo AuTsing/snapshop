@@ -44,6 +44,7 @@ declare module '@vue/runtime-core' {
     ATypography: typeof import('ant-design-vue/es')['Typography']
     ATypographyLink: typeof import('ant-design-vue/es')['TypographyLink']
     ATypographyParagraph: typeof import('ant-design-vue/es')['TypographyParagraph']
+    ATypographyText: typeof import('ant-design-vue/es')['TypographyText']
     ATypographyTitle: typeof import('ant-design-vue/es')['TypographyTitle']
     Canvas: typeof import('./src/components/Canvas.vue')['default']
     Navbar: typeof import('./src/components/Navbar.vue')['default']

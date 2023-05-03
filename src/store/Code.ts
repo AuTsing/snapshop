@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia';
+import Jimp from 'jimp/browser/lib/jimp';
 import { useRecordStore } from './Record';
 import { useAreaStore } from './Area';
 import { useDisk } from '../plugins/Disk';
@@ -18,6 +19,13 @@ export enum AreaLtrb {
     Top = 'top',
     Right = 'right',
     Bottom = 'bottom',
+}
+
+export enum ColorFormat {
+    Dec = 'dec',
+    UpperHex = 'UpperHex',
+    LowerHex = 'LowerHex',
+    Rgb = 'rgb',
 }
 
 export type GenerateStep =
@@ -41,16 +49,19 @@ export interface TextGenerateStep extends BaseGenerateStep {
 export interface PointxGenerateStep extends BaseGenerateStep {
     action: GenerateActions.Pointx;
     index: number | 'n';
+    deltaIndex: number;
 }
 
 export interface PointyGenerateStep extends BaseGenerateStep {
     action: GenerateActions.Pointy;
     index: number | 'n';
+    deltaIndex: number;
 }
 
 export interface PointcGenerateStep extends BaseGenerateStep {
     action: GenerateActions.Pointc;
     index: number | 'n';
+    format: ColorFormat;
 }
 
 export interface AreaGenerateStep extends BaseGenerateStep {
@@ -71,59 +82,82 @@ export interface DeleteGenerateStep extends BaseGenerateStep {
 }
 
 export interface ICodeState {
-    template1: string;
-    template2: string;
-    template3: string;
-    template4: string;
-    template5: string;
-    regexp: string;
-    regexpReplacement: string;
-    pointDefinition: string;
     flow1: GenerateStep[];
+    flow2: GenerateStep[];
+    flow3: GenerateStep[];
+    flow4: GenerateStep[];
+    flow5: GenerateStep[];
+    flow6: GenerateStep[];
+    flow7: GenerateStep[];
+    flow8: GenerateStep[];
 }
 
 export const defaultCode: ICodeState = {
-    template1: `{'undefined', {$points}},`,
-    template2: '',
-    template3: '',
-    template4: '',
-    template5: '',
-    regexp: '',
-    regexpReplacement: '',
-    pointDefinition: '{$point[n][x],$point[n][y],$point[n][c]}',
-    flow1: [],
+    flow1: [
+        { action: GenerateActions.Text, text: `{'undefined', ` },
+        { action: GenerateActions.Text, text: `{` },
+        { action: GenerateActions.Pointx, index: 'n', deltaIndex: 0 },
+        { action: GenerateActions.Text, text: `, ` },
+        { action: GenerateActions.Pointy, index: 'n', deltaIndex: 0 },
+        { action: GenerateActions.Text, text: `, 0x` },
+        { action: GenerateActions.Pointc, index: 'n', format: ColorFormat.LowerHex },
+        { action: GenerateActions.Text, text: `}, ` },
+        { action: GenerateActions.Repeat, steps: 7, from: 1, to: 'n' },
+        { action: GenerateActions.Text, text: `}, ` },
+    ],
+    flow2: [
+        { action: GenerateActions.Text, text: `{'undefined', ` },
+        { action: GenerateActions.Text, text: `{0x` },
+        { action: GenerateActions.Pointc, index: 1, format: ColorFormat.LowerHex },
+        { action: GenerateActions.Text, text: `,'` },
+        { action: GenerateActions.Pointx, index: 'n', deltaIndex: 1 },
+        { action: GenerateActions.Text, text: `,` },
+        { action: GenerateActions.Pointy, index: 'n', deltaIndex: 1 },
+        { action: GenerateActions.Text, text: `,0x` },
+        { action: GenerateActions.Pointc, index: 'n', format: ColorFormat.LowerHex },
+        { action: GenerateActions.Text, text: `|` },
+        { action: GenerateActions.Repeat, steps: 6, from: 2, to: 'n' },
+        { action: GenerateActions.Delete, count: 1 },
+        { action: GenerateActions.Text, text: `'}, ` },
+        { action: GenerateActions.Text, text: `}, ` },
+    ],
+    flow3: [],
+    flow4: [],
+    flow5: [],
+    flow6: [],
+    flow7: [],
+    flow8: [],
 };
 
 export const useCodeStore = defineStore('code', {
     state: () => {
         const disk = useDisk();
         return {
-            template1: disk.useStorage('template1', defaultCode.template1),
-            template2: disk.useStorage('template2', defaultCode.template2),
-            template3: disk.useStorage('template3', defaultCode.template3),
-            template4: disk.useStorage('template4', defaultCode.template4),
-            template5: disk.useStorage('template5', defaultCode.template5),
-            regexp: disk.useStorage('regexp', defaultCode.regexp),
-            regexpReplacement: disk.useStorage('regexpReplacement', defaultCode.regexpReplacement),
-            pointDefinition: disk.useStorage('pointDefinition', defaultCode.pointDefinition),
             flow1: disk.useStorage('flow1', defaultCode.flow1),
+            flow2: disk.useStorage('flow2', defaultCode.flow2),
+            flow3: disk.useStorage('flow3', defaultCode.flow3),
+            flow4: disk.useStorage('flow4', defaultCode.flow4),
+            flow5: disk.useStorage('flow5', defaultCode.flow5),
+            flow6: disk.useStorage('flow6', defaultCode.flow6),
+            flow7: disk.useStorage('flow7', defaultCode.flow7),
+            flow8: disk.useStorage('flow8', defaultCode.flow8),
         };
     },
     actions: {
         resetCode() {
             this.$patch(defaultCode);
         },
-        addStep(step: GenerateStep) {
-            this.flow1.push(step);
+        addStep(flowName: string, step: GenerateStep) {
+            this[flowName as keyof ICodeState].push(step);
         },
-        removeStep(index: number) {
-            this.flow1.splice(index, 1);
+        removeStep(flowName: string, index: number) {
+            this[flowName as keyof ICodeState].splice(index, 1);
         },
-        generate(i: number) {
+        generate(flowName: string) {
             const record = useRecordStore();
             const area = useAreaStore();
             const records = record.records.filter(record => record.cNative !== -1);
-            const flow = this[`flow${i}` as keyof ICodeState] as GenerateStep[];
+            const flow = Array.from(this[flowName as keyof ICodeState] as GenerateStep[]);
 
             for (const step of flow) {
                 if (step.action === GenerateActions.Repeat) {
@@ -151,35 +185,68 @@ export const useCodeStore = defineStore('code', {
                 }
             }
 
-            console.log(flow);
-
             let code = '';
             for (const step of flow) {
                 switch (step.action) {
                     case GenerateActions.Text:
                         code = code + step.text;
                         break;
+
                     case GenerateActions.Pointx:
                         if (step.index == 'n') {
                             code = code + '$p[n][x]';
+                        } else if (records[step.index - 1] == null) {
+                            code = code + `$p[${step.index}][x]`;
                         } else {
-                            code = code + (records[step.index - 1] ? records[step.index - 1].x.toString() : `$p[${step.index}][x]`);
+                            if (records[step.deltaIndex - 1] != null) {
+                                code = code + (records[step.index - 1].x - records[step.deltaIndex - 1].x).toString();
+                            } else {
+                                code = code + records[step.index - 1].x.toString();
+                            }
                         }
                         break;
+
                     case GenerateActions.Pointy:
                         if (step.index == 'n') {
                             code = code + '$p[n][x]';
+                        } else if (records[step.index - 1] == null) {
+                            code = code + `$p[${step.index}][y]`;
                         } else {
-                            code = code + (records[step.index - 1] ? records[step.index - 1].y.toString() : `$p[${step.index}][y]`);
+                            if (records[step.deltaIndex - 1] != null) {
+                                code = code + (records[step.index - 1].y - records[step.deltaIndex - 1].y).toString();
+                            } else {
+                                code = code + records[step.index - 1].y.toString();
+                            }
                         }
                         break;
+
                     case GenerateActions.Pointc:
                         if (step.index == 'n') {
                             code = code + '$p[n][c]';
+                        } else if (records[step.index - 1] == null) {
+                            code = code + `$p[${step.index}][c]`;
                         } else {
-                            code = code + (records[step.index - 1] ? records[step.index - 1].cNative.toString() : `$p[${step.index}][c]`);
+                            const cNative = records[step.index - 1].cNative;
+                            let c: string;
+                            switch (step.format) {
+                                case ColorFormat.Dec:
+                                    c = cNative.toString();
+                                    break;
+                                case ColorFormat.LowerHex:
+                                    c = `000000${cNative.toString(16).slice(0, -2)}`.slice(-6).toLowerCase();
+                                    break;
+                                case ColorFormat.UpperHex:
+                                    c = `000000${cNative.toString(16).slice(0, -2)}`.slice(-6).toUpperCase();
+                                    break;
+                                case ColorFormat.Rgb:
+                                    const rgba = Jimp.intToRGBA(cNative);
+                                    c = `${rgba.r},${rgba.g},${rgba.b}`;
+                                    break;
+                            }
+                            code = code + c;
                         }
                         break;
+
                     case GenerateActions.Area:
                         switch (step.ltrb) {
                             case AreaLtrb.Left:
@@ -198,12 +265,9 @@ export const useCodeStore = defineStore('code', {
                                 break;
                         }
                         break;
-                    default:
-                        break;
                 }
             }
 
-            console.log(code);
             return code;
         },
     },
