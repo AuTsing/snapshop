@@ -23,8 +23,8 @@ export enum AreaLtrb {
 
 export enum ColorFormat {
     Dec = 'dec',
-    UpperHex = 'UpperHex',
-    LowerHex = 'LowerHex',
+    UpperHex = 'upperHex',
+    LowerHex = 'lowerHex',
     Rgb = 'rgb',
 }
 
