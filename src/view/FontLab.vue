@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 import { storeToRefs } from 'pinia';
+import { message } from 'ant-design-vue';
+import { SliderValue } from 'ant-design-vue/es/slider';
+import { CopyOutlined, DeleteOutlined } from '@ant-design/icons-vue';
 import { useAreaStore } from '../store/Area';
 import { useRecordStore } from '../store/Record';
 import { useFontLabStore } from '../store/FontLab';
@@ -9,9 +12,6 @@ import { ColorMode } from '../store/Configuration';
 import { ICastMode } from '../store/FontLab';
 import { IFont } from '../store/FontLab';
 import { useControlCv } from '../plugins/ControlCv';
-
-import { message } from 'ant-design-vue';
-import { CopyOutlined, DeleteOutlined } from '@ant-design/icons-vue';
 
 const fontsColumns = [
     { title: '定义', dataIndex: 'definition', width: '25%', ellipsis: true },
@@ -31,8 +31,8 @@ const { customCast, castMode, previewBase64, fonts } = storeToRefs(fontLabStore)
 const tolerance = ref<number>(fontLabStore.tolerance);
 const definition = ref<string>('');
 
-const handleChangeTolerance = (value: number) => {
-    fontLabStore.tolerance = value;
+const handleChangeTolerance = (value: SliderValue) => {
+    fontLabStore.tolerance = value as number;
     fontLabStore.updateFontLabPreview();
 };
 const handleChangeCastMode = () => {
