@@ -127,23 +127,23 @@ onKeyStroke(
         switch (e.key) {
             case 'f':
             case 'F':
-                code = codeStore.generate(1);
+                code = codeStore.generate('flow1');
                 break;
             case 'g':
             case 'G':
-                code = codeStore.generate(2);
+                code = codeStore.generate('flow2');
                 break;
             case 'h':
             case 'H':
-                code = codeStore.generate(3);
+                code = codeStore.generate('flow3');
                 break;
             case 'v':
             case 'V':
-                code = codeStore.generate(4);
+                code = codeStore.generate('flow4');
                 break;
             case 'b':
             case 'B':
-                code = codeStore.generate(5);
+                code = codeStore.generate('flow5');
                 break;
             default:
                 break;

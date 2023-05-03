@@ -94,7 +94,7 @@ export interface ICodeState {
 
 export const defaultCode: ICodeState = {
     flow1: [
-        { action: GenerateActions.Text, text: `{'undefined', ` },
+        { action: GenerateActions.Text, text: `{'undefined', {` },
         { action: GenerateActions.Text, text: `{` },
         { action: GenerateActions.Pointx, index: 'n', deltaIndex: 0 },
         { action: GenerateActions.Text, text: `, ` },
@@ -103,7 +103,7 @@ export const defaultCode: ICodeState = {
         { action: GenerateActions.Pointc, index: 'n', format: ColorFormat.LowerHex },
         { action: GenerateActions.Text, text: `}, ` },
         { action: GenerateActions.Repeat, steps: 7, from: 1, to: 'n' },
-        { action: GenerateActions.Text, text: `}, ` },
+        { action: GenerateActions.Text, text: `}}, ` },
     ],
     flow2: [
         { action: GenerateActions.Text, text: `{'undefined', ` },
