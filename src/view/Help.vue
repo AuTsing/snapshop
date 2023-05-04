@@ -58,7 +58,7 @@ interface SnapshotCommand {
             <pre>
 {
     cmd: 'snapshot',
-    data: { success: true; message: ""; file: [] }
+    data: { success: true, message: "", file: [] }
 }</pre
             >
         </a-typography-paragraph>
@@ -67,7 +67,7 @@ interface SnapshotCommand {
             <pre>
 {
     cmd: 'snapshot',
-    data: { success: true; message: ""; file: [0,0,0,...] }
+    data: { success: true, message: "", file: [0,0,0,...] }
 }</pre
             >
         </a-typography-paragraph>
