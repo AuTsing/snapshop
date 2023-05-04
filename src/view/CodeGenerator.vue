@@ -12,6 +12,8 @@ import ResetButtonVue from '../shared/ResetButton.vue';
 const codeStore = useCodeStore();
 const controlCv = useControlCv();
 
+const flowNames = ['flow1', 'flow2', 'flow3', 'flow4', 'flow5', 'flow6', 'flow7', 'flow8'];
+
 const codeModelRef = reactive<ICodeState>(Object.assign({}, codeStore.$state));
 const addingGenerateAction = ref<GenerateActions>(GenerateActions.Text);
 const addingTextActionText = ref<string>('');
@@ -31,14 +33,14 @@ const addingRepeatActionFrom = ref<number>(1);
 const addingRepeatActionToMode = ref<'指定结束' | '自动填充点列表长度'>('自动填充点列表长度');
 const addingRepeatActionTo = ref<number>(1);
 const addingDeleteActionCount = ref<number>(1);
-const flowNames = ref<string[]>(['flow1', 'flow2', 'flow3', 'flow4', 'flow5', 'flow6', 'flow7', 'flow8']);
+const addingToStep = ref<number>(1);
 const activeFlowName = ref<string>('flow1');
 const flowSteps = computed<string[][]>(() =>
-    flowNames.value.map(flowName =>
+    flowNames.map(flowName =>
         codeModelRef[flowName as keyof ICodeState].map(step => {
             switch (step.action) {
                 case GenerateActions.Text:
-                    return `添加文本: ${step.text}`;
+                    return `添加文本 ${step.text}`;
                 case GenerateActions.Pointx:
                     if (step.deltaIndex > 0) {
                         return `添加点 ${step.index} 的 X 坐标 与 点 ${step.deltaIndex} 的 X 坐标 差值`;
@@ -80,40 +82,40 @@ const flowSteps = computed<string[][]>(() =>
 );
 const codes = ref<string[]>([]);
 
-const handleClickAddStep = (flowName: string) => {
+const handleClickAddStep = (flowName: string, toStep: number) => {
     switch (addingGenerateAction.value) {
         case GenerateActions.Text:
-            codeStore.addStep(flowName, { action: GenerateActions.Text, text: addingTextActionText.value });
+            codeStore.addStep(flowName, toStep, { action: GenerateActions.Text, text: addingTextActionText.value });
             break;
         case GenerateActions.Pointx:
-            codeStore.addStep(flowName, {
+            codeStore.addStep(flowName, toStep, {
                 action: GenerateActions.Pointx,
                 index: addingPointxActionMode.value === '指定点' ? addingPointxActionIndex.value : 'n',
                 deltaIndex: addingPointxActionDeltaIndex.value,
             });
             break;
         case GenerateActions.Pointy:
-            codeStore.addStep(flowName, {
+            codeStore.addStep(flowName, toStep, {
                 action: GenerateActions.Pointy,
                 index: addingPointyActionMode.value === '指定点' ? addingPointyActionIndex.value : 'n',
                 deltaIndex: addingPointyActionDeltaIndex.value,
             });
             break;
         case GenerateActions.Pointc:
-            codeStore.addStep(flowName, {
+            codeStore.addStep(flowName, toStep, {
                 action: GenerateActions.Pointc,
                 index: addingPointcActionMode.value === '指定点' ? addingPointcActionIndex.value : 'n',
                 format: addingPointcActionFormat.value,
             });
             break;
         case GenerateActions.Area:
-            codeStore.addStep(flowName, {
+            codeStore.addStep(flowName, toStep, {
                 action: GenerateActions.Area,
                 ltrb: addingAreaActionLtrb.value,
             });
             break;
         case GenerateActions.Repeat:
-            codeStore.addStep(flowName, {
+            codeStore.addStep(flowName, toStep, {
                 action: GenerateActions.Repeat,
                 steps: addingRepeatActionSteps.value,
                 from: addingRepeatActionFromMode.value === '指定开始' ? addingRepeatActionFrom.value : 'n',
@@ -121,7 +123,7 @@ const handleClickAddStep = (flowName: string) => {
             });
             break;
         case GenerateActions.Delete:
-            codeStore.addStep(flowName, {
+            codeStore.addStep(flowName, toStep, {
                 action: GenerateActions.Delete,
                 count: addingDeleteActionCount.value,
             });
@@ -129,6 +131,8 @@ const handleClickAddStep = (flowName: string) => {
         default:
             break;
     }
+    const flowi = flowNames.indexOf(flowName);
+    addingToStep.value = flowSteps.value[flowi].length + 1;
 };
 const handleClickRemoveStep = (flowName: string, i: number) => {
     codeStore.removeStep(flowName, i);
@@ -147,13 +151,13 @@ debouncedWatch(
         const code = toRaw(codeModelRef);
         codeStore.$patch(code);
         message.success('设置保存成功!');
-        codes.value = flowNames.value.map(flowName => codeStore.generate(flowName));
+        codes.value = flowNames.map(flowName => codeStore.generate(flowName));
     },
     { debounce: 500 }
 );
 
 onMounted(() => {
-    codes.value = flowNames.value.map(flowName => codeStore.generate(flowName));
+    codes.value = flowNames.map(flowName => codeStore.generate(flowName));
 });
 </script>
 
@@ -168,7 +172,7 @@ onMounted(() => {
                 </a-col>
                 <a-col :span="12">
                     <a-space direction="vertical" style="width: 100%">
-                        <a-select v-model:value="addingGenerateAction" style="width: 50%">
+                        <a-select v-model:value="addingGenerateAction" style="width: 75%">
                             <a-select-option :value="GenerateActions.Text">文本</a-select-option>
                             <a-select-option :value="GenerateActions.Pointx">X 坐标</a-select-option>
                             <a-select-option :value="GenerateActions.Pointy">Y 坐标</a-select-option>
@@ -276,7 +280,15 @@ onMounted(() => {
                         <a-row v-if="addingGenerateAction === GenerateActions.Delete" style="width: 75%">
                             <a-input-number v-model:value="addingDeleteActionCount" addonBefore="次数" style="width: 100%" />
                         </a-row>
-                        <a-button @click="() => handleClickAddStep(flowName)" style="width: 50%">添加步骤</a-button>
+                        <a-input-number
+                            v-model:value="addingToStep"
+                            addonBefore="添加至第"
+                            addonAfter="个步骤"
+                            :min="1"
+                            :max="flowSteps[flowi].length + 1"
+                            style="width: 50%"
+                        />
+                        <a-button @click="() => handleClickAddStep(flowName, addingToStep)" style="width: 50%">添加步骤</a-button>
                         <a-button type="primary" @click="() => handleClickCopyCode(flowi)" style="width: 50%">复制代码</a-button>
                         <a-typography-paragraph>
                             <pre>{{ codes[flowi] === '' ? '请添加步骤以组织代码' : codes[flowi] }}</pre>

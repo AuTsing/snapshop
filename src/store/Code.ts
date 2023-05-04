@@ -147,8 +147,8 @@ export const useCodeStore = defineStore('code', {
         resetCode() {
             this.$patch(defaultCode);
         },
-        addStep(flowName: string, step: GenerateStep) {
-            this[flowName as keyof ICodeState].push(step);
+        addStep(flowName: string, toStep: number, step: GenerateStep) {
+            this[flowName as keyof ICodeState].splice(toStep - 1, 0, step);
         },
         removeStep(flowName: string, index: number) {
             this[flowName as keyof ICodeState].splice(index, 1);
