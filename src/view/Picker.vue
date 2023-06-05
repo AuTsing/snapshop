@@ -126,25 +126,30 @@ onKeyStroke(
         let code: string = '';
         switch (e.key) {
             case 'f':
-            case 'F':
                 code = codeStore.generate('flow1');
                 break;
             case 'g':
-            case 'G':
                 code = codeStore.generate('flow2');
                 break;
             case 'h':
-            case 'H':
                 code = codeStore.generate('flow3');
                 break;
             case 'v':
-            case 'V':
                 code = codeStore.generate('flow4');
                 break;
             case 'b':
-            case 'B':
                 code = codeStore.generate('flow5');
                 break;
+            case 'F':
+                code = codeStore.generate('flow6');
+            case 'G':
+                code = codeStore.generate('flow7');
+            case 'H':
+                code = codeStore.generate('flow8');
+            case 'V':
+                code = codeStore.generate('flow9');
+            case 'B':
+                code = codeStore.generate('flow10');
             default:
                 break;
         }

@@ -90,35 +90,37 @@ export interface ICodeState {
     flow6: GenerateStep[];
     flow7: GenerateStep[];
     flow8: GenerateStep[];
+    flow9: GenerateStep[];
+    flow10: GenerateStep[];
 }
 
 export const defaultCode: ICodeState = {
     flow1: [
-        { action: GenerateActions.Text, text: `{'undefined', {` },
+        { action: GenerateActions.Text, text: `{'undefined',{` },
         { action: GenerateActions.Text, text: `{` },
         { action: GenerateActions.Pointx, index: 'n', deltaIndex: 0 },
-        { action: GenerateActions.Text, text: `, ` },
+        { action: GenerateActions.Text, text: `,` },
         { action: GenerateActions.Pointy, index: 'n', deltaIndex: 0 },
-        { action: GenerateActions.Text, text: `, 0x` },
+        { action: GenerateActions.Text, text: `,0x` },
         { action: GenerateActions.Pointc, index: 'n', format: ColorFormat.LowerHex },
-        { action: GenerateActions.Text, text: `}, ` },
+        { action: GenerateActions.Text, text: `},` },
         { action: GenerateActions.Repeat, steps: 7, from: 1, to: 'n' },
-        { action: GenerateActions.Text, text: `}}, ` },
+        { action: GenerateActions.Text, text: `},},` },
     ],
     flow2: [
-        { action: GenerateActions.Text, text: `{'undefined', ` },
+        { action: GenerateActions.Text, text: `{'undefined',` },
         { action: GenerateActions.Text, text: `{0x` },
         { action: GenerateActions.Pointc, index: 1, format: ColorFormat.LowerHex },
         { action: GenerateActions.Text, text: `,'` },
         { action: GenerateActions.Pointx, index: 'n', deltaIndex: 1 },
-        { action: GenerateActions.Text, text: `,` },
-        { action: GenerateActions.Pointy, index: 'n', deltaIndex: 1 },
-        { action: GenerateActions.Text, text: `,0x` },
-        { action: GenerateActions.Pointc, index: 'n', format: ColorFormat.LowerHex },
         { action: GenerateActions.Text, text: `|` },
+        { action: GenerateActions.Pointy, index: 'n', deltaIndex: 1 },
+        { action: GenerateActions.Text, text: `|0x` },
+        { action: GenerateActions.Pointc, index: 'n', format: ColorFormat.LowerHex },
+        { action: GenerateActions.Text, text: `,` },
         { action: GenerateActions.Repeat, steps: 6, from: 2, to: 'n' },
         { action: GenerateActions.Delete, count: 1 },
-        { action: GenerateActions.Text, text: `'}, ` },
+        { action: GenerateActions.Text, text: `'},` },
         { action: GenerateActions.Text, text: `}, ` },
     ],
     flow3: [],
@@ -127,6 +129,8 @@ export const defaultCode: ICodeState = {
     flow6: [],
     flow7: [],
     flow8: [],
+    flow9: [],
+    flow10: [],
 };
 
 export const useCodeStore = defineStore('code', {
@@ -141,6 +145,8 @@ export const useCodeStore = defineStore('code', {
             flow6: disk.useStorage('flow6', defaultCode.flow6),
             flow7: disk.useStorage('flow7', defaultCode.flow7),
             flow8: disk.useStorage('flow8', defaultCode.flow8),
+            flow9: disk.useStorage('flow9', defaultCode.flow9),
+            flow10: disk.useStorage('flow10', defaultCode.flow10),
         };
     },
     actions: {

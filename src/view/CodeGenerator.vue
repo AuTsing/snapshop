@@ -12,7 +12,7 @@ import ResetButtonVue from '../shared/ResetButton.vue';
 const codeStore = useCodeStore();
 const controlCv = useControlCv();
 
-const flowNames = ['flow1', 'flow2', 'flow3', 'flow4', 'flow5', 'flow6', 'flow7', 'flow8'];
+const flowNames = ['flow1', 'flow2', 'flow3', 'flow4', 'flow5', 'flow6', 'flow7', 'flow8', 'flow9', 'flow10'];
 
 const codeModelRef = reactive<ICodeState>(Object.assign({}, codeStore.$state));
 const addingGenerateAction = ref<GenerateActions>(GenerateActions.Text);
@@ -28,7 +28,7 @@ const addingPointcActionIndex = ref<number>(1);
 const addingPointcActionFormat = ref<ColorFormat>(ColorFormat.LowerHex);
 const addingAreaActionLtrb = ref<AreaLtrb>(AreaLtrb.Left);
 const addingRepeatActionSteps = ref<number>(1);
-const addingRepeatActionFromMode = ref<'指定开始' | '自动填充点列表长度'>('自动填充点列表长度');
+const addingRepeatActionFromMode = ref<'指定开始' | '自动填充点列表长度'>('指定开始');
 const addingRepeatActionFrom = ref<number>(1);
 const addingRepeatActionToMode = ref<'指定结束' | '自动填充点列表长度'>('自动填充点列表长度');
 const addingRepeatActionTo = ref<number>(1);
@@ -86,6 +86,7 @@ const handleClickAddStep = (flowName: string, toStep: number) => {
     switch (addingGenerateAction.value) {
         case GenerateActions.Text:
             codeStore.addStep(flowName, toStep, { action: GenerateActions.Text, text: addingTextActionText.value });
+            addingTextActionText.value = '';
             break;
         case GenerateActions.Pointx:
             codeStore.addStep(flowName, toStep, {
@@ -182,7 +183,12 @@ onMounted(() => {
                             <a-select-option :value="GenerateActions.Delete">删除</a-select-option>
                         </a-select>
                         <a-row v-if="addingGenerateAction === GenerateActions.Text" style="width: 75%">
-                            <a-input v-model:value="addingTextActionText" placeholder="添加文本" allowClear />
+                            <a-input
+                                v-model:value="addingTextActionText"
+                                @press-enter="() => handleClickAddStep(flowName, addingToStep)"
+                                placeholder="添加文本"
+                                allowClear
+                            />
                         </a-row>
                         <a-row v-if="addingGenerateAction === GenerateActions.Pointx" style="width: 75%">
                             <a-input-number

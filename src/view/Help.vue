@@ -24,11 +24,16 @@ const generateCodeHotkeysColumns = [
     { title: '模板', dataIndex: 'template' },
 ];
 const generateCodeHotkeys = [
-    { key: '1', hotkey: 'F', template: '使用流程 1 生成代码并复制' },
-    { key: '2', hotkey: 'G', template: '使用流程 2 生成代码并复制' },
-    { key: '3', hotkey: 'H', template: '使用流程 3 生成代码并复制' },
-    { key: '4', hotkey: 'V', template: '使用流程 4 生成代码并复制' },
-    { key: '5', hotkey: 'B', template: '使用流程 5 生成代码并复制' },
+    { key: '1', hotkey: 'f', template: '使用流程 1 生成代码并复制' },
+    { key: '2', hotkey: 'g', template: '使用流程 2 生成代码并复制' },
+    { key: '3', hotkey: 'h', template: '使用流程 3 生成代码并复制' },
+    { key: '4', hotkey: 'v', template: '使用流程 4 生成代码并复制' },
+    { key: '5', hotkey: 'b', template: '使用流程 5 生成代码并复制' },
+    { key: '6', hotkey: 'F', template: '使用流程 6 生成代码并复制' },
+    { key: '7', hotkey: 'G', template: '使用流程 7 生成代码并复制' },
+    { key: '8', hotkey: 'H', template: '使用流程 8 生成代码并复制' },
+    { key: '9', hotkey: 'V', template: '使用流程 9 生成代码并复制' },
+    { key: '10', hotkey: 'B', template: '使用流程 10 生成代码并复制' },
 ];
 </script>
 
