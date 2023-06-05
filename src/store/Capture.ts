@@ -63,6 +63,9 @@ export function readFileFromWs(url: URL): Promise<ArrayBuffer> {
         });
         wsc.addEventListener('message', ev => {
             const cmd = JSON.parse(ev.data) as SnapshotCommand;
+            if (cmd.cmd !== 'snapshot') {
+                return;
+            }
             if (cmd.data.success) {
                 const u8Array = Uint8Array.from(cmd.data.file);
                 resolve(u8Array.buffer);
