@@ -142,14 +142,19 @@ onKeyStroke(
                 break;
             case 'F':
                 code = codeStore.generate('flow6');
+                break;
             case 'G':
                 code = codeStore.generate('flow7');
+                break;
             case 'H':
                 code = codeStore.generate('flow8');
+                break;
             case 'V':
                 code = codeStore.generate('flow9');
+                break;
             case 'B':
                 code = codeStore.generate('flow10');
+                break;
             default:
                 break;
         }
