@@ -133,6 +133,17 @@ export const defaultCode: ICodeState = {
     flow10: [],
 };
 
+export function readFileAsString(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+            resolve(reader.result as string);
+        };
+        reader.onerror = reject;
+        reader.readAsText(file);
+    });
+}
+
 export const useCodeStore = defineStore('code', {
     state: () => {
         const disk = useDisk();
@@ -150,8 +161,12 @@ export const useCodeStore = defineStore('code', {
         };
     },
     actions: {
-        resetCode() {
-            this.$patch(defaultCode);
+        setFlow(flowName: string, flow: GenerateStep[]) {
+            this[flowName as keyof ICodeState] = flow;
+        },
+        resetFlow(flowName: string) {
+            const flow = Array.from(defaultCode[flowName as keyof ICodeState]);
+            this.setFlow(flowName, flow);
         },
         addStep(flowName: string, toStep: number, step: GenerateStep) {
             this[flowName as keyof ICodeState].splice(toStep - 1, 0, step);

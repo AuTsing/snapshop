@@ -3,11 +3,14 @@ import { computed, onMounted, reactive, ref, toRaw } from 'vue';
 import { debouncedWatch } from '@vueuse/core';
 import { message } from 'ant-design-vue';
 
-import { GenerateActions, useCodeStore } from '../store/Code';
+import { GenerateActions, useCodeStore, readFileAsString } from '../store/Code';
 import { defaultCode } from '../store/Code';
 import { AreaLtrb, ICodeState, ColorFormat } from '../store/Code';
 import { useControlCv } from '../plugins/ControlCv';
 import ResetButtonVue from '../shared/ResetButton.vue';
+import ImportButtonVue from '../shared/ImportButton.vue';
+import ExportButtonVue from '../shared/ExportButton.vue';
+import Opener from '../components/Opener.vue';
 
 const codeStore = useCodeStore();
 const controlCv = useControlCv();
@@ -135,15 +138,40 @@ const handleClickAddStep = (flowName: string, toStep: number) => {
     const flowi = flowNames.indexOf(flowName);
     addingToStep.value = flowSteps.value[flowi].length + 1;
 };
+
 const handleClickRemoveStep = (flowName: string, i: number) => {
     codeStore.removeStep(flowName, i);
 };
-const handleClickResetCode = () => {
-    Object.assign(codeModelRef, defaultCode);
-    codeStore.resetCode();
-};
+
 const handleClickCopyCode = (flowi: number) => {
     controlCv.ctrlC(codes.value[flowi]);
+};
+
+const handleClickResetFlow = (flowName: string) => {
+    const defaultFlow = Array.from(defaultCode[flowName as keyof ICodeState]);
+    codeModelRef[flowName as keyof ICodeState] = defaultFlow;
+    codeStore.resetFlow(flowName);
+};
+
+const handleClickImportFlow = async (it: any) => {
+    const files = Array.from(it.target.files as FileList);
+    const file = files[0];
+    const content = await readFileAsString(file);
+    const flow = JSON.parse(content);
+    Object.assign(codeModelRef[activeFlowName.value as keyof ICodeState], flow);
+    codeStore.setFlow(activeFlowName.value, flow);
+    it.target.value = null;
+};
+
+const handleClickExportFlow = () => {
+    const content = JSON.stringify(codeModelRef[activeFlowName.value as keyof ICodeState]);
+    const blob = new Blob([content], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${activeFlowName.value}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
 };
 
 debouncedWatch(
@@ -304,8 +332,16 @@ onMounted(() => {
             </a-row>
         </a-tab-pane>
     </a-tabs>
-    <a-row :style="{ margin: '16px' }">
-        <ResetButtonVue :handleClick="handleClickResetCode" />
+    <a-row :style="{ padding: '16px' }">
+        <a-space>
+            <ResetButtonVue :handleClick="() => handleClickResetFlow(activeFlowName)" />
+            <Opener :handleChangeFile="handleClickImportFlow" acceptExt=".json">
+                <template #default>
+                    <ImportButtonVue :handleClick="() => {}" />
+                </template>
+            </Opener>
+            <ExportButtonVue :handleClick="handleClickExportFlow" />
+        </a-space>
     </a-row>
 </template>
 

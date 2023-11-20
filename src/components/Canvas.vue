@@ -28,17 +28,30 @@ const handleTabsChange = (key: Key) => {
     captureStore.activeKey = key.toString();
 };
 
-const handleClickLoad = async () => {
+const handleClickLoadRemote = async () => {
     captureStore.loading = true;
     const key = await captureStore.addCaptureFromLink(configurationStore.usingApi);
     captureStore.activeKey = key;
     captureStore.loading = false;
 };
+
+const handleClickLoadLocal = async (e: any) => {
+    const files = Array.from(e.target.files as FileList);
+    captureStore.loading = true;
+    for (const file of files) {
+        const key = await captureStore.addCaptureFromFile(file);
+        captureStore.activeKey = key;
+    }
+    e.target.value = null;
+    captureStore.loading = false;
+};
+
 const handleClickRotate = async () => {
     captureStore.loading = true;
     await captureStore.rotateCapture();
     captureStore.loading = false;
 };
+
 const handleClickClose = () => {
     const index = captureStore.activeIndex;
     captureStore.removeCapture(activeKey.value);
@@ -50,20 +63,24 @@ const handleClickClose = () => {
         captureStore.activeKey = 'blank';
     }
 };
+
 const handleClickCloseAll = () => {
     captureStore.removeCapture();
     captureStore.activeKey = 'blank';
 };
+
 const handleDragEnter = (e: DragEvent) => {
     e.stopPropagation();
     e.preventDefault();
     dragingTarget = e.target;
     captureStore.loading = true;
 };
+
 const handleDragOver = (e: DragEvent) => {
     e.stopPropagation();
     e.preventDefault();
 };
+
 const handleDragLeave = (e: DragEvent) => {
     e.stopPropagation();
     e.preventDefault();
@@ -71,6 +88,7 @@ const handleDragLeave = (e: DragEvent) => {
         captureStore.loading = false;
     }
 };
+
 const handleDrop = async (e: DragEvent) => {
     e.stopPropagation();
     e.preventDefault();
@@ -97,12 +115,13 @@ const handleDrop = async (e: DragEvent) => {
     }
     captureStore.loading = false;
 };
+
 const handleClickOpen = () => {
     refOpener.value.handleClickOpen();
 };
 
 defineExpose({
-    handleClickLoad,
+    handleClickLoadRemote,
     handleClickOpen,
 });
 </script>
@@ -122,11 +141,11 @@ defineExpose({
                 <template #leftExtra>
                     <div :style="{ margin: '0 7px' }">
                         <a-tooltip title="远程加载图片">
-                            <a-button type="text" @click="handleClickLoad">
+                            <a-button type="text" @click="handleClickLoadRemote">
                                 <template #icon><CloudDownloadOutlined /></template>
                             </a-button>
                         </a-tooltip>
-                        <OpenerVue ref="refOpener">
+                        <OpenerVue ref="refOpener" :handleChangeFile="handleClickLoadLocal" acceptExt=".png,.jpg">
                             <template #default>
                                 <a-tooltip title="本地加载图片">
                                     <a-button type="text">
