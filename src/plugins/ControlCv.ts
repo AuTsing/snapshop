@@ -28,9 +28,12 @@ class ControlCv {
         }
         this.nativeCopy(text)
             .then(() => this.success(text))
-            .catch(err => {
-                console.error(err);
-                this.error('复制失败: 未知错误');
+            .catch(it => {
+                if (it instanceof Error) {
+                    this.error(`复制失败: ${it.message}`);
+                } else {
+                    this.error(`复制失败: ${it}`);
+                }
             });
     }
 }
