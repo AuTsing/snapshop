@@ -12,21 +12,40 @@ class ControlCv {
         this.isSupport = isSupported;
     }
 
-    private success(text: string): void {
+    private success(text: string) {
         text = `${text.slice(0, 30)}${text.length > 30 ? '...' : ''} 已复制到剪贴板`;
         message.success(text);
     }
 
-    private error(text: string): void {
+    private error(text: string) {
         message.error(text);
     }
 
-    public ctrlC(text: string): void {
+    private legacyCopy(value: string) {
+        const ta = document.createElement('textarea');
+        ta.value = value ?? '';
+        ta.style.position = 'absolute';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        ta.remove();
+    }
+
+    public ctrlC(text: string) {
         if (!this.isSupport) {
             message.error('复制失败: 该环境下不支持复制');
             return;
         }
+
         this.nativeCopy(text)
+            .catch(it => {
+                if (it instanceof Error && it.message === 'Write permission denied.') {
+                    return this.legacyCopy(text);
+                } else {
+                    throw it;
+                }
+            })
             .then(() => this.success(text))
             .catch(it => {
                 if (it instanceof Error) {
