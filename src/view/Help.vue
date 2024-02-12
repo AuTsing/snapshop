@@ -48,31 +48,39 @@ const generateCodeHotkeys = [
         <a-typography-paragraph> 请正确配置 CORS ，否则，这将可能导致无法加载图片。 </a-typography-paragraph>
         <a-typography-link href="https://developer.mozilla.org/zh-CN/docs/Web/HTTP/CORS" target="_blank"> 什么是 CORS ？ </a-typography-link>
         <a-typography-title :level="4">从 WS 加载图片</a-typography-title>
-        <a-typography-paragraph> WS 是更为推荐远程加载图片方式。 </a-typography-paragraph>
-        <a-typography-paragraph> 交互应遵循以下接口： </a-typography-paragraph>
-        <a-typography-paragraph>
-            <pre>
-interface SnapshotCommand { 
-    cmd: 'snapshot';
-    data: { success: boolean; message: string; file: number[] };
-}</pre
-            >
-        </a-typography-paragraph>
+        <a-typography-paragraph> WS 是更为推荐远程加载图片方式，交互请适配以下协议。 </a-typography-paragraph>
         <a-typography-paragraph> Snapshop 截图时会发送： </a-typography-paragraph>
         <a-typography-paragraph>
             <pre>
 {
     cmd: 'snapshot',
-    data: { success: true, message: "", file: [] }
+    data: { file: [] }
 }</pre
             >
         </a-typography-paragraph>
-        <a-typography-paragraph> 服务程序应发送以完成交互： </a-typography-paragraph>
+        <a-typography-paragraph> 服务器成功时应响应： </a-typography-paragraph>
+        <a-typography-paragraph>
+            <pre>
+{
+    cmd: 'result',
+    data: { success: true, message: '' }
+}</pre
+            >
+        </a-typography-paragraph>
         <a-typography-paragraph>
             <pre>
 {
     cmd: 'snapshot',
-    data: { success: true, message: "", file: [0,0,0,...] }
+    data: { file: [0,0,0,...] }
+}</pre
+            >
+        </a-typography-paragraph>
+        <a-typography-paragraph> 服务器失败时应响应： </a-typography-paragraph>
+        <a-typography-paragraph>
+            <pre>
+{
+    cmd: 'result',
+    data: { success: false, message: '失败原因' }
 }</pre
             >
         </a-typography-paragraph>
