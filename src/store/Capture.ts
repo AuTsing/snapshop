@@ -19,7 +19,12 @@ export interface ICapture {
 
 export interface SnapshotCommand {
     cmd: 'snapshot';
-    data: { success: boolean; message: string; file: number[] };
+    data: { file: number[] };
+}
+
+export interface ResultCommand {
+    cmd: 'result';
+    data: { success: boolean; message: string };
 }
 
 export function readFileSync(file: File): Promise<ArrayBuffer> {
@@ -54,30 +59,43 @@ export function readFileFromWs(url: URL): Promise<ArrayBuffer> {
             const cmd: SnapshotCommand = {
                 cmd: 'snapshot',
                 data: {
-                    success: true,
-                    message: '',
                     file: [],
                 },
             };
             wsc.send(JSON.stringify(cmd));
         });
         wsc.addEventListener('message', ev => {
-            const cmd = JSON.parse(ev.data) as SnapshotCommand;
-            if (cmd.cmd !== 'snapshot') {
-                return;
+            const cmd = JSON.parse(ev.data);
+            switch (cmd.cmd) {
+                case 'result':
+                    const resultCommand = cmd as ResultCommand;
+                    if (resultCommand.data.success === false) {
+                        reject(new Error(cmd.data.message));
+                        wsc.close();
+                    }
+                    break;
+                case 'snapshot':
+                    const snapshotCommand = cmd as SnapshotCommand;
+                    const u8Array = Uint8Array.from(snapshotCommand.data.file);
+                    resolve(u8Array.buffer);
+                    wsc.close();
+                    break;
+                default:
+                    reject(new Error('未知的命令: ' + cmd.cmd));
+                    wsc.close();
+                    break;
             }
-            if (cmd.data.success) {
-                const u8Array = Uint8Array.from(cmd.data.file);
-                resolve(u8Array.buffer);
-            } else {
-                reject(new Error(cmd.data.message));
-            }
-            wsc.close();
         });
         wsc.addEventListener('error', _ => {
             wsc.close();
             reject(new Error('无法连接 WS 服务器'));
         });
+        setTimeout(() => {
+            if (wsc.readyState === wsc.OPEN) {
+                wsc.close();
+                reject(new Error('连接 WS 服务器超时'));
+            }
+        }, 10000);
     });
 }
 
