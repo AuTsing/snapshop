@@ -57,7 +57,7 @@ onKeyStroke(
             coordinateStore.updateCoordinate(x, y);
         }
     },
-    { target: refCanvas.value }
+    { target: refCanvas.value },
 );
 onKeyStroke(
     ['1', '2', '3', '4', '5', '6', '7', '8', '9'],
@@ -69,7 +69,7 @@ onKeyStroke(
             recordStore.addRecord(x, y, coordinateStore.c(), coordinateStore.cNative, e.key);
         }
     },
-    { target: refCanvas.value }
+    { target: refCanvas.value },
 );
 onKeyStroke(
     ['q', 'Q'],
@@ -81,7 +81,7 @@ onKeyStroke(
             areaStore.updateArea(x, y, areaStore.x2, areaStore.y2);
         }
     },
-    { target: refCanvas.value }
+    { target: refCanvas.value },
 );
 onKeyStroke(
     ['e', 'E'],
@@ -93,7 +93,7 @@ onKeyStroke(
             areaStore.updateArea(areaStore.x1, areaStore.y1, x, y);
         }
     },
-    { target: refCanvas.value }
+    { target: refCanvas.value },
 );
 onKeyStroke(
     ['z', 'Z'],
@@ -101,7 +101,7 @@ onKeyStroke(
         e.preventDefault();
         recordStore.removeRecord();
     },
-    { target: refCanvas.value }
+    { target: refCanvas.value },
 );
 onKeyStroke(
     ['x', 'X'],
@@ -109,7 +109,7 @@ onKeyStroke(
         e.preventDefault();
         areaStore.resetArea();
     },
-    { target: refCanvas.value }
+    { target: refCanvas.value },
 );
 onKeyStroke(
     ['c', 'C'],
@@ -117,7 +117,7 @@ onKeyStroke(
         e.preventDefault();
         recordStore.refetchRecord();
     },
-    { target: refCanvas.value }
+    { target: refCanvas.value },
 );
 onKeyStroke(
     ['f', 'F', 'g', 'G', 'h', 'H', 'v', 'V', 'b', 'B'],
@@ -160,7 +160,7 @@ onKeyStroke(
         }
         controlCv.ctrlC(code);
     },
-    { target: refCanvas.value }
+    { target: refCanvas.value },
 );
 onKeyStroke(['r', 'R'], () => refCanvas.value.handleClickLoad(), { target: refCanvas.value });
 onKeyStroke(['t', 'T'], () => refCanvas.value.handleClickOpen(), { target: refCanvas.value });
@@ -168,9 +168,9 @@ onKeyStroke(
     ['n', 'N'],
     async () => {
         configurationStore.useNextLoadCaptureMode();
-        message.info(`远程加载图片模式已切换至: ${configurationStore.loadCaptureMode}`);
+        message.info(`远程加载图片模式已切换至: ${configurationStore.loadCaptureMode} ${configurationStore.usingApi}`);
     },
-    { target: refCanvas.value }
+    { target: refCanvas.value },
 );
 
 onMounted(() => {
