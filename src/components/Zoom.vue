@@ -85,7 +85,7 @@ watch(
             });
         }
     },
-    { immediate: true }
+    { immediate: true },
 );
 </script>
 
@@ -99,10 +99,12 @@ watch(
 
 <style scoped>
 .zoom-container {
-    position: relative;
+    position: absolute;
     height: 294px;
     width: 294px;
     flex: 0 0 auto;
+    z-index: 1;
+    background-color: #1f1f1f;
 }
 .zoom-cursor {
     position: absolute;
@@ -113,13 +115,13 @@ watch(
     left: calc(50% - 7px);
 }
 .zoom-cursor-red {
-    z-index: 3;
+    z-index: 4;
     border: solid 1px red;
     outline: solid 1px white;
 }
 .zoom-cover {
     position: absolute;
-    z-index: 2;
+    z-index: 3;
     width: 14px;
     height: 14px;
     pointer-events: none;
@@ -128,6 +130,6 @@ watch(
 }
 .zoom-content {
     position: absolute;
-    z-index: 1;
+    z-index: 2;
 }
 </style>

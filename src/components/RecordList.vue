@@ -52,51 +52,58 @@ const handleClickResetArea = () => {
 </script>
 
 <template>
-    <a-table :columns="pointsColumns" :data-source="records" bordered size="small" :pagination="false">
-        <template #bodyCell="{ column, record }">
-            <template v-if="column.dataIndex === 'xy'">
-                <span style="cursor: pointer" @click="() => handleClickCopyText(`${record.x},${record.y}`)">{{ `${record.x},${record.y}` }}</span>
+    <div class="list-container">
+        <a-table :columns="pointsColumns" :data-source="records" bordered size="small" :pagination="false">
+            <template #bodyCell="{ column, record }">
+                <template v-if="column.dataIndex === 'xy'">
+                    <span style="cursor: pointer" @click="() => handleClickCopyText(`${record.x},${record.y}`)">{{
+                        `${record.x},${record.y}`
+                    }}</span>
+                </template>
+                <template v-if="column.dataIndex === 'c'">
+                    <a-tag class="tag" :color="displayColor(record.cNative, ColorMode.hexWithPound)">
+                        <span style="cursor: pointer" @click="() => handleClickCopyText(record.c)">{{ record.c }}</span>
+                    </a-tag>
+                </template>
+                <template v-if="column.dataIndex === 'action'">
+                    <a-space size="middle">
+                        <CopyOutlined @click="() => handleClickCopyRecord(record)" />
+                        <DeleteOutlined @click="() => handleClickRemoveRecord(record)" />
+                    </a-space>
+                </template>
             </template>
-            <template v-if="column.dataIndex === 'c'">
-                <a-tag class="tag" :color="displayColor(record.cNative, ColorMode.hexWithPound)">
-                    <span style="cursor: pointer" @click="() => handleClickCopyText(record.c)">{{ record.c }}</span>
-                </a-tag>
+            <template #emptyText>
+                {{ '鼠标左键/数字键1-9开始取色' }}
             </template>
-            <template v-if="column.dataIndex === 'action'">
-                <a-space size="middle">
-                    <CopyOutlined @click="() => handleClickCopyRecord(record)" />
-                    <DeleteOutlined @click="() => handleClickRemoveRecord(record)" />
-                </a-space>
+        </a-table>
+        <a-table :columns="areaColumns" :data-source="areas" bordered size="small" :pagination="false">
+            <template #bodyCell="{ column, record }">
+                <template v-if="column.dataIndex === 'area'">
+                    <span style="cursor: pointer" @click="() => handleClickCopyText(`${record.x1},${record.y1}`)">
+                        {{ `${record.x1},${record.y1}, ` }}
+                    </span>
+                    <span style="cursor: pointer" @click="() => handleClickCopyText(`${record.x2},${record.y2}`)">
+                        {{ `${record.x2},${record.y2}` }}
+                    </span>
+                </template>
+                <template v-if="column.dataIndex === 'action'">
+                    <a-space size="middle">
+                        <CopyOutlined @click="() => handleClickCopyArea(record)" />
+                        <DeleteOutlined @click="handleClickResetArea" />
+                    </a-space>
+                </template>
             </template>
-        </template>
-        <template #emptyText>
-            {{ '鼠标左键/数字键1-9开始取色' }}
-        </template>
-    </a-table>
-    <a-table :columns="areaColumns" :data-source="areas" bordered size="small" :pagination="false">
-        <template #bodyCell="{ column, record }">
-            <template v-if="column.dataIndex === 'area'">
-                <span style="cursor: pointer" @click="() => handleClickCopyText(`${record.x1},${record.y1}`)">
-                    {{ `${record.x1},${record.y1}, ` }}
-                </span>
-                <span style="cursor: pointer" @click="() => handleClickCopyText(`${record.x2},${record.y2}`)">
-                    {{ `${record.x2},${record.y2}` }}
-                </span>
+            <template #emptyText>
+                {{ 'Q/E开始选取范围' }}
             </template>
-            <template v-if="column.dataIndex === 'action'">
-                <a-space size="middle">
-                    <CopyOutlined @click="() => handleClickCopyArea(record)" />
-                    <DeleteOutlined @click="handleClickResetArea" />
-                </a-space>
-            </template>
-        </template>
-        <template #emptyText>
-            {{ 'Q/E开始选取范围' }}
-        </template>
-    </a-table>
+        </a-table>
+    </div>
 </template>
 
 <style scoped>
+.list-container {
+    margin-top: 378px;
+}
 .tag {
     width: 100%;
     text-shadow: #000 1px 0 0, #000 0 1px 0, #000 -1px 0 0, #000 0 -1px 0;

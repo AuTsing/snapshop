@@ -18,7 +18,6 @@ import RecordListVue from './RecordList.vue';
     display: flex;
     height: 100%;
     width: 100%;
-    padding-right: 20px;
     flex-direction: column;
     overflow-y: overlay;
 }
