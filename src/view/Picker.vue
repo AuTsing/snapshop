@@ -162,7 +162,7 @@ onKeyStroke(
     },
     { target: refCanvas.value },
 );
-onKeyStroke(['r', 'R'], () => refCanvas.value.handleClickLoad(), { target: refCanvas.value });
+onKeyStroke(['r', 'R'], () => refCanvas.value.handleClickLoadRemote(), { target: refCanvas.value });
 onKeyStroke(['t', 'T'], () => refCanvas.value.handleClickOpen(), { target: refCanvas.value });
 onKeyStroke(
     ['n', 'N'],
