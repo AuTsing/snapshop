@@ -1,15 +1,21 @@
-import { App, Plugin, getCurrentInstance } from 'vue';
-import { useClipboard } from '@vueuse/core';
+import { type App, type Plugin, inject } from 'vue';
+import { useClipboard as vueUseClipboard, type UseClipboardReturn } from '@vueuse/core';
 import { message } from 'ant-design-vue';
 
-class ControlCv {
-    public readonly nativeCopy: (text: string) => Promise<void>;
-    public readonly isSupport: boolean;
+class Clipboard {
+    static instance: Clipboard;
+
+    static getInstance(): Clipboard {
+        if (!Clipboard.instance) {
+            Clipboard.instance = new Clipboard();
+        }
+        return Clipboard.instance;
+    }
+
+    readonly clipboard: UseClipboardReturn<false>;
 
     constructor() {
-        const { copy, isSupported } = useClipboard();
-        this.nativeCopy = copy;
-        this.isSupport = isSupported;
+        this.clipboard = vueUseClipboard();
     }
 
     private success(text: string) {
@@ -32,13 +38,14 @@ class ControlCv {
         ta.remove();
     }
 
-    public ctrlC(text: string) {
-        if (!this.isSupport) {
+    copy(text: string) {
+        if (!this.clipboard.isSupported) {
             message.error('复制失败: 该环境下不支持复制');
             return;
         }
 
-        this.nativeCopy(text)
+        this.clipboard
+            .copy(text)
             .catch(it => {
                 if (it instanceof Error && it.message === 'Write permission denied.') {
                     return this.legacyCopy(text);
@@ -57,11 +64,11 @@ class ControlCv {
     }
 }
 
-export const controlCv: Plugin = {
+export const clipboard: Plugin = {
     install: (app: App) => {
-        const instance = new ControlCv();
-        app.config.globalProperties.$controlCv = instance;
+        const instance = new Clipboard();
+        app.provide('clipboard', instance);
     },
 };
 
-export const useControlCv: () => ControlCv = () => getCurrentInstance()?.appContext.config.globalProperties.$controlCv;
+export const useClipboard: () => Clipboard = () => inject('clipboard') ?? Clipboard.getInstance();

@@ -1,20 +1,38 @@
-import { App, Plugin, getCurrentInstance } from 'vue';
+import { type App, type Plugin, inject } from 'vue';
 
-export enum VscodeMessageCommand {
-    getItem = 'getItem',
-    setItem = 'setItem',
-}
+export const VscodeMessageCommand = {
+    getItem: 'getItem',
+    setItem: 'setItem',
+} as const;
+
+export type VscodeMessageCommand = (typeof VscodeMessageCommand)[keyof typeof VscodeMessageCommand];
 
 export interface VscodeMessage {
     command: VscodeMessageCommand;
-    data: any;
+    data: { key: string; value?: unknown };
+}
+
+declare function acquireVsCodeApi(): VsCodeApi;
+
+export interface VsCodeApi {
+    setState: (newState: unknown) => void;
+    getState: () => unknown;
+    postMessage: (message: VscodeMessage) => void;
 }
 
 export class Vscode {
     private static instance: Vscode;
-    public readonly setState: VsCodeApi['setState'];
-    public readonly getState: VsCodeApi['getState'];
-    public readonly postMessage: VsCodeApi['postMessage'];
+
+    static getInstance() {
+        if (!Vscode.instance) {
+            Vscode.instance = new Vscode();
+        }
+        return Vscode.instance;
+    }
+
+    readonly setState: VsCodeApi['setState'];
+    readonly getState: VsCodeApi['getState'];
+    readonly postMessage: VsCodeApi['postMessage'];
 
     private constructor() {
         const vscode = acquireVsCodeApi();
@@ -22,21 +40,13 @@ export class Vscode {
         this.getState = vscode.getState;
         this.postMessage = vscode.postMessage;
     }
-
-    public static getInstance() {
-        if (!Vscode.instance) {
-            Vscode.instance = new Vscode();
-        }
-        return Vscode.instance;
-    }
 }
 
 export const vscode: Plugin = {
     install: (app: App) => {
         const instance = Vscode.getInstance();
-        app.config.globalProperties.$vscode = instance;
+        app.provide('vscode', instance);
     },
 };
 
-export const useVscode: () => Vscode = () =>
-    getCurrentInstance()?.appContext.config.globalProperties.$vscode ?? Vscode.getInstance();
+export const useVscode: () => Vscode = () => inject('vscode') ?? Vscode.getInstance();
