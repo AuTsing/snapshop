@@ -1,10 +1,10 @@
 import { createApp } from 'vue';
-import App from './App.vue';
 import { createPinia } from 'pinia';
 import { router } from './router';
 import { controlCv } from './plugins/ControlCv';
 import { vscode } from './plugins/Vscode';
 import { disk } from './plugins/Disk';
+import App from './App.vue';
 
 const app = createApp(App);
 app.use(createPinia());
@@ -15,5 +15,6 @@ app.use(disk);
 if (import.meta.env.VITE_APP_ENV === 'vscode') {
     app.use(vscode);
 }
+import.meta;
 
 app.mount('#app');
