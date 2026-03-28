@@ -127,7 +127,13 @@ defineExpose({
 </script>
 
 <template>
-    <div style="height: 100%" @dragenter="handleDragEnter" @dragover="handleDragOver" @dragleave="handleDragLeave" @drop="handleDrop">
+    <div
+        style="height: 100%"
+        @dragenter="handleDragEnter"
+        @dragover="handleDragOver"
+        @dragleave="handleDragLeave"
+        @drop="handleDrop"
+    >
         <a-spin wrapperClassName="spin" :spinning="spinning">
             <a-tabs class="tabs" :activeKey="activeKey" @change="handleTabsChange">
                 <a-tab-pane v-if="captures.length === 0" key="blank" tab="起始页">
@@ -183,7 +189,7 @@ defineExpose({
     </div>
 </template>
 
-<style lang="less" scoped>
+<style scoped>
 .tabs {
     height: 100%;
 }

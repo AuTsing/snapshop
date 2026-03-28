@@ -38,4 +38,5 @@ export const vscode: Plugin = {
     },
 };
 
-export const useVscode: () => Vscode = () => getCurrentInstance()?.appContext.config.globalProperties.$vscode ?? Vscode.getInstance();
+export const useVscode: () => Vscode = () =>
+    getCurrentInstance()?.appContext.config.globalProperties.$vscode ?? Vscode.getInstance();

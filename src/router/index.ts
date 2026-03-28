@@ -1,17 +1,9 @@
-import { createRouter, createWebHashHistory, RouteRecordRaw } from 'vue-router';
-import { IRoute } from './IRoute';
-import Picker from './Picker';
-import Setting from './Setting';
-import Help from './Help';
-import CodeGenerator from './CodeGenerator';
-import Comparer from './Comparer';
-import FontLab from './FontLab';
+import { createMemoryHistory, createRouter, type RouteRecordRaw } from 'vue-router';
+import { routes } from './routes';
 
-export const views: IRoute[] = [Picker, CodeGenerator, Comparer, FontLab, Setting, Help];
-
-export const routes: RouteRecordRaw[] = [{ path: '/', component: Picker.view }, ...views.map(view => ({ path: '/' + view.key, component: view.view }))];
+const routeRecords: RouteRecordRaw[] = routes.map(it => ({ path: '/' + it.key, component: it.view }));
 
 export const router = createRouter({
-    history: createWebHashHistory(),
-    routes,
+    history: createMemoryHistory(),
+    routes: routeRecords,
 });
