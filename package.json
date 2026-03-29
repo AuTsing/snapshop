@@ -7,8 +7,8 @@
         "dev": "vp dev",
         "build": "vue-tsc -b && vp build",
         "preview": "vp preview",
-        "build:vscode": "vue-tsc -b && vp build --mode vscode-production --outDir ../../dist/snapshop",
-        "watch:vscode": "vp build --watch --mode vscode-development --outDir ../../dist/snapshop"
+        "build:vscode": "vue-tsc -b && vp build --mode vscode-production --outDir ../../dist/snapshop --emptyOutDir",
+        "watch:vscode": "vp build --watch --mode vscode-development --outDir ../../dist/snapshop --emptyOutDir"
     },
     "devDependencies": {
         "@types/node": "^22.0.0",
