@@ -2,7 +2,7 @@
 import { computed, onMounted, ref } from 'vue';
 import { storeToRefs } from 'pinia';
 import { message } from 'ant-design-vue';
-import { SliderValue } from 'ant-design-vue/es/slider';
+import { type SliderValue } from 'ant-design-vue/es/slider';
 import { CopyOutlined, DeleteOutlined } from '@ant-design/icons-vue';
 import { useAreaStore } from '../store/Area';
 import { useRecordStore } from '../store/Record';
@@ -10,8 +10,8 @@ import { useFontLabStore } from '../store/FontLab';
 import { displayColor } from '../store/Coordinate';
 import { ColorMode } from '../store/Configuration';
 import { ICastMode } from '../store/FontLab';
-import { IFont } from '../store/FontLab';
-import { useControlCv } from '../plugins/ControlCv';
+import { type IFont } from '../store/FontLab';
+import { useClipboard } from '../plugins/Clipboard';
 
 const fontsColumns = [
     { title: '定义', dataIndex: 'definition', width: '25%', ellipsis: true },
@@ -22,7 +22,7 @@ const fontsColumns = [
 const areaStore = useAreaStore();
 const recordStore = useRecordStore();
 const fontLabStore = useFontLabStore();
-const controlCv = useControlCv();
+const clipboard = useClipboard();
 
 const area = computed(() => areaStore);
 const records = computed(() => recordStore.records);
@@ -42,7 +42,9 @@ const handleBlurCustomCast = () => {
     if (!customCast.value) {
         return;
     }
-    const casts = /([a-fA-F\d]{2}[a-fA-F\d]{2}[a-fA-F\d]{2})\s*,\s*([a-fA-F\d]{2}[a-fA-F\d]{2}[a-fA-F\d]{2})/.exec(customCast.value);
+    const casts = /([a-fA-F\d]{2}[a-fA-F\d]{2}[a-fA-F\d]{2})\s*,\s*([a-fA-F\d]{2}[a-fA-F\d]{2}[a-fA-F\d]{2})/.exec(
+        customCast.value,
+    );
     if (!casts) {
         customCast.value = '';
         message.warning('偏色格式不可用');
@@ -63,7 +65,7 @@ const handleClickCopyCast = () => {
     if (!copyCast) {
         return;
     }
-    controlCv.ctrlC(copyCast);
+    clipboard.copy(copyCast);
 };
 const handleClickAddFont = () => {
     if (definition.value === '' || previewBase64.value === '') {
@@ -95,7 +97,12 @@ const handleClickAddFont = () => {
         }
     });
 
-    const cropedJimp = previewJimp.crop(range.x1, range.y1, Math.abs(range.x2 - range.x1 + 1), Math.abs(range.y2 - range.y1 + 1));
+    const cropedJimp = previewJimp.crop(
+        range.x1,
+        range.y1,
+        Math.abs(range.x2 - range.x1 + 1),
+        Math.abs(range.y2 - range.y1 + 1),
+    );
     for (let x = 0; x < cropedJimp.bitmap.width; x++) {
         for (let y = 0; y < cropedJimp.bitmap.height; y++) {
             if (cropedJimp.getPixelColor(x, y) === 0x000000ff) {
@@ -139,13 +146,13 @@ const handleClickAddFont = () => {
 };
 const handleClickGeneratorFontLab = () => {
     const font = '{\n' + fonts.value.map(font => `'${font.code}'`).join(',\n') + '\n}';
-    controlCv.ctrlC(font);
+    clipboard.copy(font);
 };
 const handleClickRemoveFont = (font: IFont) => {
     fontLabStore.removeFont(font.key);
 };
 const handleClickCopyFont = (font: IFont) => {
-    controlCv.ctrlC(`'${font.code}',`);
+    clipboard.copy(font.code);
 };
 
 onMounted(() => {
@@ -159,10 +166,18 @@ onMounted(() => {
             <a-col :span="12">
                 <a-divider orientation="left">已选择范围</a-divider>
                 <div v-if="Object.values(area).some(p => p === -1)" class="placeholder">在主面板中 Q/E 选取范围</div>
-                <a-statistic v-if="Object.values(area).every(p => p !== -1)" :value="`${area.x1}, ${area.y1}, ${area.x2}, ${area.y2}`" />
+                <a-statistic
+                    v-if="Object.values(area).every(p => p !== -1)"
+                    :value="`${area.x1}, ${area.y1}, ${area.x2}, ${area.y2}`"
+                />
                 <a-divider orientation="left">已选择颜色</a-divider>
                 <div v-if="records.length === 0" class="placeholder">在主面板中使用 鼠标左键/数字键1-9 取点</div>
-                <a-tag v-if="records.length > 0" v-for="record in records" class="tag" :color="displayColor(record.cNative, ColorMode.hexWithPound)">
+                <a-tag
+                    v-if="records.length > 0"
+                    v-for="record in records"
+                    class="tag"
+                    :color="displayColor(record.cNative, ColorMode.hexWithPound)"
+                >
                     {{ record.c }}
                 </a-tag>
                 <a-divider orientation="left">容差</a-divider>
@@ -173,7 +188,13 @@ onMounted(() => {
                         <a-select-option :value="ICastMode.auto">{{ ICastMode.auto }}</a-select-option>
                         <a-select-option :value="ICastMode.custom">{{ ICastMode.custom }}</a-select-option>
                     </a-select>
-                    <a-input v-if="castMode === ICastMode.auto" :value="cast" style="width: 50%" :disabled="true" placeholder="未选择颜色" />
+                    <a-input
+                        v-if="castMode === ICastMode.auto"
+                        :value="cast"
+                        style="width: 50%"
+                        :disabled="true"
+                        placeholder="未选择颜色"
+                    />
                     <a-input
                         v-if="castMode === ICastMode.custom"
                         v-model:value="customCast"
@@ -184,7 +205,10 @@ onMounted(() => {
                     <a-button
                         type="text"
                         style="width: 10%"
-                        :disabled="(castMode === ICastMode.auto && cast === '') || (castMode === ICastMode.custom && customCast === '')"
+                        :disabled="
+                            (castMode === ICastMode.auto && cast === '') ||
+                            (castMode === ICastMode.custom && customCast === '')
+                        "
                     >
                         <CopyOutlined @click="handleClickCopyCast" />
                     </a-button>
@@ -194,8 +218,19 @@ onMounted(() => {
                 <img v-if="previewBase64 !== ''" :src="previewBase64" :draggable="false" />
                 <a-divider orientation="left">字库</a-divider>
                 <a-input-group compact>
-                    <a-input v-model:value="definition" placeholder="定义文字" :allowClear="true" style="width: 50%" @pressEnter="handleClickAddFont" />
-                    <a-button :disabled="definition === '' || previewBase64 === ''" style="width: 25%" @click="handleClickAddFont">添加到字库</a-button>
+                    <a-input
+                        v-model:value="definition"
+                        placeholder="定义文字"
+                        :allowClear="true"
+                        style="width: 50%"
+                        @pressEnter="handleClickAddFont"
+                    />
+                    <a-button
+                        :disabled="definition === '' || previewBase64 === ''"
+                        style="width: 25%"
+                        @click="handleClickAddFont"
+                        >添加到字库</a-button
+                    >
                     <a-button style="width: 25%" @click="handleClickGeneratorFontLab">生成字库</a-button>
                 </a-input-group>
                 <a-table :columns="fontsColumns" :data-source="fonts" bordered size="small" :pagination="false">
@@ -218,7 +253,11 @@ onMounted(() => {
 
 <style scoped>
 .tag {
-    text-shadow: #000 1px 0 0, #000 0 1px 0, #000 -1px 0 0, #000 0 -1px 0;
+    text-shadow:
+        #000 1px 0 0,
+        #000 0 1px 0,
+        #000 -1px 0 0,
+        #000 0 -1px 0;
 }
 .placeholder {
     padding: 8px;

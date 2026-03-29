@@ -6,10 +6,12 @@ import Jimp from 'jimp/browser/lib/jimp';
 import { displayColor } from './Coordinate';
 import { ColorMode } from './Configuration';
 
-export enum ICastMode {
-    auto = '自动生成',
-    custom = '自定义',
-}
+export const ICastMode = {
+    auto: '自动生成',
+    custom: '自定义',
+} as const;
+
+export type ICastMode = (typeof ICastMode)[keyof typeof ICastMode];
 
 export interface IFontLabState {
     tolerance: number;
@@ -53,7 +55,7 @@ export const useFontLabStore = defineStore('fontLab', {
                         last.b.push(rgb.b);
                         return last;
                     },
-                    { r: [], g: [], b: [] }
+                    { r: [], g: [], b: [] },
                 );
             const range = {
                 r: [Math.min(...rgbs.r), Math.max(...rgbs.r)],
@@ -126,7 +128,8 @@ export const useFontLabStore = defineStore('fontLab', {
                 this.previewBase64 = '';
                 return;
             }
-            const rgb: TCastRgb = this.castMode === ICastMode.custom && this.customCast !== '' ? this.customCastRgb : this.castRgb;
+            const rgb: TCastRgb =
+                this.castMode === ICastMode.custom && this.customCast !== '' ? this.customCastRgb : this.castRgb;
             const calcRgb: TCastRgb = {
                 r: [rgb.r[0] - rgb.r[1], rgb.r[0] + rgb.r[1]],
                 g: [rgb.g[0] - rgb.g[1], rgb.g[0] + rgb.g[1]],

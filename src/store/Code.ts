@@ -2,31 +2,37 @@ import { defineStore } from 'pinia';
 import Jimp from 'jimp/browser/lib/jimp';
 import { useRecordStore } from './Record';
 import { useAreaStore } from './Area';
-import { useDisk } from '../plugins/Disk';
+import { useStorage } from '../plugins/Storage';
 
-export enum GenerateActions {
-    Text = 'text',
-    Pointx = 'pointx',
-    Pointy = 'pointy',
-    Pointc = 'pointc',
-    Area = 'area',
-    Repeat = 'repeat',
-    Delete = 'delete',
-}
+export const GenerateActions = {
+    Text: 'text',
+    Pointx: 'pointx',
+    Pointy: 'pointy',
+    Pointc: 'pointc',
+    Area: 'area',
+    Repeat: 'repeat',
+    Delete: 'delete',
+} as const;
 
-export enum AreaLtrb {
-    Left = 'left',
-    Top = 'top',
-    Right = 'right',
-    Bottom = 'bottom',
-}
+export type GenerateActions = (typeof GenerateActions)[keyof typeof GenerateActions];
 
-export enum ColorFormat {
-    Dec = 'dec',
-    UpperHex = 'upperHex',
-    LowerHex = 'lowerHex',
-    Rgb = 'rgb',
-}
+export const AreaLtrb = {
+    Left: 'left',
+    Top: 'top',
+    Right: 'right',
+    Bottom: 'bottom',
+} as const;
+
+export type AreaLtrb = (typeof AreaLtrb)[keyof typeof AreaLtrb];
+
+export const ColorFormat = {
+    Dec: 'dec',
+    UpperHex: 'upperHex',
+    LowerHex: 'lowerHex',
+    Rgb: 'rgb',
+} as const;
+
+export type ColorFormat = (typeof ColorFormat)[keyof typeof ColorFormat];
 
 export type GenerateStep =
     | TextGenerateStep
@@ -37,49 +43,45 @@ export type GenerateStep =
     | ReapeatGenerateStep
     | DeleteGenerateStep;
 
-export interface BaseGenerateStep {
-    action: GenerateStep['action'];
-}
-
-export interface TextGenerateStep extends BaseGenerateStep {
-    action: GenerateActions.Text;
+export type TextGenerateStep = {
+    action: 'text';
     text: string;
-}
+};
 
-export interface PointxGenerateStep extends BaseGenerateStep {
-    action: GenerateActions.Pointx;
+export type PointxGenerateStep = {
+    action: 'pointx';
     index: number | 'n';
     deltaIndex: number;
-}
+};
 
-export interface PointyGenerateStep extends BaseGenerateStep {
-    action: GenerateActions.Pointy;
+export type PointyGenerateStep = {
+    action: 'pointy';
     index: number | 'n';
     deltaIndex: number;
-}
+};
 
-export interface PointcGenerateStep extends BaseGenerateStep {
-    action: GenerateActions.Pointc;
+export type PointcGenerateStep = {
+    action: 'pointc';
     index: number | 'n';
     format: ColorFormat;
-}
+};
 
-export interface AreaGenerateStep extends BaseGenerateStep {
-    action: GenerateActions.Area;
+export type AreaGenerateStep = {
+    action: 'area';
     ltrb: AreaLtrb;
-}
+};
 
-export interface ReapeatGenerateStep extends BaseGenerateStep {
-    action: GenerateActions.Repeat;
+export type ReapeatGenerateStep = {
+    action: 'repeat';
     steps: number;
     from: number | 'n';
     to: number | 'n';
-}
+};
 
-export interface DeleteGenerateStep extends BaseGenerateStep {
-    action: GenerateActions.Delete;
+export type DeleteGenerateStep = {
+    action: 'delete';
     count: number;
-}
+};
 
 export interface ICodeState {
     flow1: GenerateStep[];
@@ -146,18 +148,18 @@ export function readFileAsString(file: File): Promise<string> {
 
 export const useCodeStore = defineStore('code', {
     state: () => {
-        const disk = useDisk();
+        const storage = useStorage();
         return {
-            flow1: disk.useStorage('flow1', defaultCode.flow1),
-            flow2: disk.useStorage('flow2', defaultCode.flow2),
-            flow3: disk.useStorage('flow3', defaultCode.flow3),
-            flow4: disk.useStorage('flow4', defaultCode.flow4),
-            flow5: disk.useStorage('flow5', defaultCode.flow5),
-            flow6: disk.useStorage('flow6', defaultCode.flow6),
-            flow7: disk.useStorage('flow7', defaultCode.flow7),
-            flow8: disk.useStorage('flow8', defaultCode.flow8),
-            flow9: disk.useStorage('flow9', defaultCode.flow9),
-            flow10: disk.useStorage('flow10', defaultCode.flow10),
+            flow1: storage.useState('flow1', defaultCode.flow1),
+            flow2: storage.useState('flow2', defaultCode.flow2),
+            flow3: storage.useState('flow3', defaultCode.flow3),
+            flow4: storage.useState('flow4', defaultCode.flow4),
+            flow5: storage.useState('flow5', defaultCode.flow5),
+            flow6: storage.useState('flow6', defaultCode.flow6),
+            flow7: storage.useState('flow7', defaultCode.flow7),
+            flow8: storage.useState('flow8', defaultCode.flow8),
+            flow9: storage.useState('flow9', defaultCode.flow9),
+            flow10: storage.useState('flow10', defaultCode.flow10),
         };
     },
     actions: {
@@ -190,7 +192,11 @@ export const useCodeStore = defineStore('code', {
                     for (let i = from; i <= to; i++) {
                         flowSlice.forEach(step => {
                             const clone = Object.assign({}, step);
-                            if (clone.action === GenerateActions.Pointx || clone.action === GenerateActions.Pointy || clone.action === GenerateActions.Pointc) {
+                            if (
+                                clone.action === GenerateActions.Pointx ||
+                                clone.action === GenerateActions.Pointy ||
+                                clone.action === GenerateActions.Pointc
+                            ) {
                                 clone.index = i;
                             }
                             generatedSlice.push(clone);
@@ -263,6 +269,8 @@ export const useCodeStore = defineStore('code', {
                                     const rgba = Jimp.intToRGBA(cNative);
                                     c = `${rgba.r},${rgba.g},${rgba.b}`;
                                     break;
+                                default:
+                                    throw Error('Unknown ColorFormat:', step.format);
                             }
                             code = code + c;
                         }

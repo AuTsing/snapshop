@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
+import { message } from 'ant-design-vue';
+import { onKeyStroke } from '@vueuse/core';
 import { useCoordinateStore } from '../store/Coordinate';
 import { useRecordStore } from '../store/Record';
 import { useAreaStore } from '../store/Area';
 import { useCodeStore } from '../store/Code';
 import { useConfigurationStore } from '../store/Configuration';
 import { useLoadCaptureApiStore } from '../store/LoadCaptureApi';
-import { onKeyStroke } from '@vueuse/core';
-import { useControlCv } from '../plugins/ControlCv';
-import { message } from 'ant-design-vue';
+import { useClipboard } from '../plugins/Clipboard';
 
 import CanvasVue from '../components/Canvas.vue';
 import ShowcaseVue from '../components/Showcase.vue';
@@ -19,7 +19,7 @@ const areaStore = useAreaStore();
 const codeStore = useCodeStore();
 const configurationStore = useConfigurationStore();
 const loadCaptureApiStore = useLoadCaptureApiStore();
-const controlCv = useControlCv();
+const clipboard = useClipboard();
 
 const refCanvas = ref();
 
@@ -158,7 +158,7 @@ onKeyStroke(
             default:
                 break;
         }
-        controlCv.ctrlC(code);
+        clipboard.copy(code);
     },
     { target: refCanvas.value },
 );

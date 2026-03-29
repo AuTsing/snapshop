@@ -1,9 +1,9 @@
 import { createMemoryHistory, createRouter, type RouteRecordRaw } from 'vue-router';
-import { routes } from './routes';
+import { views } from './views';
 
-const routeRecords: RouteRecordRaw[] = routes.map(it => ({ path: '/' + it.key, component: it.view }));
+export const routes: RouteRecordRaw[] = views.map(it => ({ path: '/' + it.key, component: it.content }));
 
 export const router = createRouter({
     history: createMemoryHistory(),
-    routes: routeRecords,
+    routes: routes,
 });

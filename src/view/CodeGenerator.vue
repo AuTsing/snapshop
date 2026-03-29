@@ -3,17 +3,23 @@ import { computed, onMounted, reactive, ref, toRaw } from 'vue';
 import { debouncedWatch } from '@vueuse/core';
 import { message } from 'ant-design-vue';
 
-import { GenerateActions, useCodeStore, readFileAsString } from '../store/Code';
-import { defaultCode } from '../store/Code';
-import { AreaLtrb, ICodeState, ColorFormat } from '../store/Code';
-import { useControlCv } from '../plugins/ControlCv';
+import {
+    GenerateActions,
+    useCodeStore,
+    readFileAsString,
+    defaultCode,
+    AreaLtrb,
+    ColorFormat,
+    type ICodeState,
+} from '../store/Code';
+import { useClipboard } from '../plugins/Clipboard';
 import ResetButtonVue from '../shared/ResetButton.vue';
 import ImportButtonVue from '../shared/ImportButton.vue';
 import ExportButtonVue from '../shared/ExportButton.vue';
 import Opener from '../components/Opener.vue';
 
 const codeStore = useCodeStore();
-const controlCv = useControlCv();
+const clipboard = useClipboard();
 
 const flowNames = ['flow1', 'flow2', 'flow3', 'flow4', 'flow5', 'flow6', 'flow7', 'flow8', 'flow9', 'flow10'];
 
@@ -80,8 +86,8 @@ const flowSteps = computed<string[][]>(() =>
                 case GenerateActions.Delete:
                     return `重复操作完成后 删除以上 ${step.count} 个步骤`;
             }
-        })
-    )
+        }),
+    ),
 );
 const codes = ref<string[]>([]);
 
@@ -144,7 +150,7 @@ const handleClickRemoveStep = (flowName: string, i: number) => {
 };
 
 const handleClickCopyCode = (flowi: number) => {
-    controlCv.ctrlC(codes.value[flowi]);
+    clipboard.copy(codes.value[flowi]);
 };
 
 const handleClickResetFlow = (flowName: string) => {
@@ -182,7 +188,7 @@ debouncedWatch(
         message.success('设置保存成功!');
         codes.value = flowNames.map(flowName => codeStore.generate(flowName));
     },
-    { debounce: 500 }
+    { debounce: 500 },
 );
 
 onMounted(() => {
@@ -196,7 +202,12 @@ onMounted(() => {
             <a-row :gutter="8">
                 <a-col :span="12">
                     <a-steps direction="vertical" size="small" :current="-1">
-                        <a-step v-for="(step, i) in flowSteps[flowi]" :title="step" status="process" @click="() => handleClickRemoveStep(flowName, i)" />
+                        <a-step
+                            v-for="(step, i) in flowSteps[flowi]"
+                            :title="step"
+                            status="process"
+                            @click="() => handleClickRemoveStep(flowName, i)"
+                        />
                     </a-steps>
                 </a-col>
                 <a-col :span="12">
@@ -233,7 +244,13 @@ onMounted(() => {
                                     </a-select>
                                 </template>
                             </a-input-number>
-                            <a-input-number v-model:value="addingPointxActionDeltaIndex" addonBefore="与点" addonAfter="的差值" :min="0" style="width: 100%" />
+                            <a-input-number
+                                v-model:value="addingPointxActionDeltaIndex"
+                                addonBefore="与点"
+                                addonAfter="的差值"
+                                :min="0"
+                                style="width: 100%"
+                            />
                         </a-row>
                         <a-row v-if="addingGenerateAction === GenerateActions.Pointy" style="width: 75%">
                             <a-input-number
@@ -250,7 +267,13 @@ onMounted(() => {
                                     </a-select>
                                 </template>
                             </a-input-number>
-                            <a-input-number v-model:value="addingPointyActionDeltaIndex" addonBefore="与点" addonAfter="的差值" :min="0" style="width: 100%" />
+                            <a-input-number
+                                v-model:value="addingPointyActionDeltaIndex"
+                                addonBefore="与点"
+                                addonAfter="的差值"
+                                :min="0"
+                                style="width: 100%"
+                            />
                         </a-row>
                         <a-row v-if="addingGenerateAction === GenerateActions.Pointc" style="width: 75%">
                             <a-input-number
@@ -283,7 +306,13 @@ onMounted(() => {
                             </a-select>
                         </a-row>
                         <a-row v-if="addingGenerateAction === GenerateActions.Repeat" style="width: 75%">
-                            <a-input-number v-model:value="addingRepeatActionSteps" addonBefore="将以上" addonAfter="个步骤重复" :min="1" style="width: 100%" />
+                            <a-input-number
+                                v-model:value="addingRepeatActionSteps"
+                                addonBefore="将以上"
+                                addonAfter="个步骤重复"
+                                :min="1"
+                                style="width: 100%"
+                            />
                             <a-input-number
                                 v-model:value="addingRepeatActionFrom"
                                 :min="1"
@@ -312,7 +341,11 @@ onMounted(() => {
                             </a-input-number>
                         </a-row>
                         <a-row v-if="addingGenerateAction === GenerateActions.Delete" style="width: 75%">
-                            <a-input-number v-model:value="addingDeleteActionCount" addonBefore="次数" style="width: 100%" />
+                            <a-input-number
+                                v-model:value="addingDeleteActionCount"
+                                addonBefore="次数"
+                                style="width: 100%"
+                            />
                         </a-row>
                         <a-input-number
                             v-model:value="addingToStep"
@@ -322,8 +355,12 @@ onMounted(() => {
                             :max="flowSteps[flowi].length + 1"
                             style="width: 50%"
                         />
-                        <a-button @click="() => handleClickAddStep(flowName, addingToStep)" style="width: 50%">添加步骤</a-button>
-                        <a-button type="primary" @click="() => handleClickCopyCode(flowi)" style="width: 50%">复制代码</a-button>
+                        <a-button @click="() => handleClickAddStep(flowName, addingToStep)" style="width: 50%"
+                            >添加步骤</a-button
+                        >
+                        <a-button type="primary" @click="() => handleClickCopyCode(flowi)" style="width: 50%"
+                            >复制代码</a-button
+                        >
                         <a-typography-paragraph>
                             <pre>{{ codes[flowi] === '' ? '请添加步骤以组织代码' : codes[flowi] }}</pre>
                         </a-typography-paragraph>

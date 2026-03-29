@@ -15,53 +15,53 @@ import FontLabVue from '../view/FontLab.vue';
 import SettingVue from '../view/Setting.vue';
 import HelpVue from '../view/Help.vue';
 
-export interface Route {
+export interface View {
     key: string;
     title: string;
     icon: CodepenOutlinedIconType;
-    view: DefineComponent<{}, {}, any>;
+    content: DefineComponent<{}, {}, any>;
 }
 
-const picker: Route = {
+const picker: View = {
     key: 'picker',
     title: '主面板',
     icon: CodepenOutlined,
-    view: PickerVue,
+    content: PickerVue,
 };
 
-const codeGenerator: Route = {
+const codeGenerator: View = {
     key: 'code-generator',
     title: '生成代码',
     icon: CodeOutlined,
-    view: CodeGeneratorVue,
+    content: CodeGeneratorVue,
 };
 
-const comparer: Route = {
+const comparer: View = {
     key: 'comparer',
     title: '图片比较器',
     icon: BlockOutlined,
-    view: ComparerVue,
+    content: ComparerVue,
 };
 
-const fontLab: Route = {
+const fontLab: View = {
     key: 'font-lab',
     title: '字库',
     icon: FontColorsOutlined,
-    view: FontLabVue,
+    content: FontLabVue,
 };
 
-const setting: Route = {
+const setting: View = {
     key: 'setting',
     title: '设置',
     icon: SettingOutlined,
-    view: SettingVue,
+    content: SettingVue,
 };
 
-const help: Route = {
+const help: View = {
     key: 'help',
     title: '帮助',
     icon: QuestionCircleOutlined,
-    view: HelpVue,
+    content: HelpVue,
 };
 
-export const routes: Route[] = [picker, codeGenerator, comparer, fontLab, setting, help];
+export const views: View[] = [picker, codeGenerator, comparer, fontLab, setting, help];

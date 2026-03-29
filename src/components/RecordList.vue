@@ -1,18 +1,18 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+import { type ColumnsType } from 'ant-design-vue/es/table';
 import { useRecordStore } from '../store/Record';
 import { useAreaStore } from '../store/Area';
-import { IRecord } from '../store/Record';
-import { useControlCv } from '../plugins/ControlCv';
+import { type IRecord } from '../store/Record';
 import { displayColor } from '../store/Coordinate';
 import { ColorMode } from '../store/Configuration';
-import { ColumnsType } from 'ant-design-vue/es/table';
+import { useClipboard } from '../plugins/Clipboard';
 
 import { CopyOutlined, DeleteOutlined } from '@ant-design/icons-vue';
 
 const recordStore = useRecordStore();
 const areaStore = useAreaStore();
-const controlCv = useControlCv();
+const clipboard = useClipboard();
 
 const pointsColumns: ColumnsType = [
     { title: '坐标', dataIndex: 'xy', width: '33%', align: 'center' },
@@ -35,16 +35,16 @@ const areas = computed(() => {
 });
 
 const handleClickCopyText = (txt: string) => {
-    controlCv.ctrlC(txt);
+    clipboard.copy(txt);
 };
 const handleClickCopyRecord = (record: IRecord) => {
-    controlCv.ctrlC(`${record.x},${record.y},${record.c}`);
+    clipboard.copy(`${record.x},${record.y},${record.c}`);
 };
 const handleClickRemoveRecord = (record: IRecord) => {
     recordStore.removeRecord(record.key);
 };
 const handleClickCopyArea = (record: { x1: number; y1: number; x2: number; y2: number }) => {
-    controlCv.ctrlC(`${record.x1},${record.y1},${record.x2},${record.y2}`);
+    clipboard.copy(`${record.x1},${record.y1},${record.x2},${record.y2}`);
 };
 const handleClickResetArea = () => {
     areaStore.resetArea();
@@ -106,6 +106,10 @@ const handleClickResetArea = () => {
 }
 .tag {
     width: 100%;
-    text-shadow: #000 1px 0 0, #000 0 1px 0, #000 -1px 0 0, #000 0 -1px 0;
+    text-shadow:
+        #000 1px 0 0,
+        #000 0 1px 0,
+        #000 -1px 0 0,
+        #000 0 -1px 0;
 }
 </style>

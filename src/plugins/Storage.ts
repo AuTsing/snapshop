@@ -1,11 +1,5 @@
 import { type App, type Plugin, type MaybeRefOrGetter, inject } from 'vue';
-import {
-    type Awaitable,
-    type RemovableRef,
-    type StorageLikeAsync,
-    useStorage as vueUseStorage,
-    useStorageAsync as vueUseStorageAsync,
-} from '@vueuse/core';
+import { type Awaitable, type RemovableRef, type StorageLikeAsync, useStorage as vueUseStorage } from '@vueuse/core';
 import { type VscodeMessage, VscodeMessageCommand, useVscode, Vscode } from './Vscode';
 
 export class VscodeStorage implements StorageLikeAsync {
@@ -47,13 +41,13 @@ class Storage {
         return Storage.instance;
     }
 
-    useState: <T>(key: string, initialValue: MaybeRefOrGetter<T>) => Awaitable<RemovableRef<T>>;
+    useState: <T>(key: string, initialValue: MaybeRefOrGetter<T>) => RemovableRef<T>;
 
     private constructor() {
         const env = import.meta.env.VITE_APP_ENV;
         if (env === 'vscode') {
             this.useState = <T>(key: string, initialValue: MaybeRefOrGetter<T>) =>
-                vueUseStorageAsync(key, initialValue, new VscodeStorage());
+                vueUseStorage(key, initialValue, new VscodeStorage());
         } else {
             this.useState = <T>(key: string, initialValue: MaybeRefOrGetter<T>) => vueUseStorage(key, initialValue);
         }

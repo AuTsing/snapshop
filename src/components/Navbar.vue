@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { views } from '../router';
+import { views } from '../route/views';
 
 const collapsed = ref<boolean>(true);
 const selectedKeys = ref<string[]>([views[0].key]);

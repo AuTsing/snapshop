@@ -1,20 +1,22 @@
 import { defineStore } from 'pinia';
-import { useDisk } from '../plugins/Disk';
+import { useStorage } from '../plugins/Storage';
 import { useLoadCaptureApiStore } from './LoadCaptureApi';
 
-export enum ColorMode {
-    dec = '十进制',
-    hex = '十六进制',
-    hexWith0x = '0x前缀十六进制',
-    hexWithPound = '#前缀十六进制',
-    rgb = 'RGB',
-}
+export const ColorMode = {
+    dec: '十进制',
+    hex: '十六进制',
+    hexWith0x: '0x前缀十六进制',
+    hexWithPound: '#前缀十六进制',
+    rgb: 'RGB',
+} as const;
 
-export enum LoadCaptureMode {
-    fromApi1 = '从接口1加载',
-    fromApi2 = '从接口2加载',
-    fromApi3 = '从接口3加载',
-}
+export type ColorMode = (typeof ColorMode)[keyof typeof ColorMode];
+
+export const LoadCaptureMode = {
+    fromApi1: '从接口1加载',
+    fromApi2: '从接口2加载',
+    fromApi3: '从接口3加载',
+} as const;
 
 export interface IConfigurationState {
     loadCaptureMode: string;
@@ -36,14 +38,14 @@ export const defaultConfiguration: IConfigurationState = {
 
 export const useConfigurationStore = defineStore('configuration', {
     state: () => {
-        const disk = useDisk();
+        const storage = useStorage();
         return {
-            loadCaptureMode: disk.useStorage('loadCaptureMode', defaultConfiguration.loadCaptureMode),
-            loadCaptureApi1: disk.useStorage('loadCaptureApi1', defaultConfiguration.loadCaptureApi1),
-            loadCaptureApi2: disk.useStorage('loadCaptureApi2', defaultConfiguration.loadCaptureApi2),
-            loadCaptureApi3: disk.useStorage('loadCaptureApi3', defaultConfiguration.loadCaptureApi3),
-            colorMode: disk.useStorage('colorMode', defaultConfiguration.colorMode),
-            showSameCoordinate: disk.useStorage('showSameCoordinate', defaultConfiguration.showSameCoordinate),
+            loadCaptureMode: storage.useState('loadCaptureMode', defaultConfiguration.loadCaptureMode),
+            loadCaptureApi1: storage.useState('loadCaptureApi1', defaultConfiguration.loadCaptureApi1),
+            loadCaptureApi2: storage.useState('loadCaptureApi2', defaultConfiguration.loadCaptureApi2),
+            loadCaptureApi3: storage.useState('loadCaptureApi3', defaultConfiguration.loadCaptureApi3),
+            colorMode: storage.useState('colorMode', defaultConfiguration.colorMode),
+            showSameCoordinate: storage.useState('showSameCoordinate', defaultConfiguration.showSameCoordinate),
         };
     },
     getters: {
@@ -68,7 +70,11 @@ export const useConfigurationStore = defineStore('configuration', {
         useNextLoadCaptureMode() {
             const loadCaptureApiStore = useLoadCaptureApiStore();
 
-            const internalModes: string[] = [LoadCaptureMode.fromApi1, LoadCaptureMode.fromApi2, LoadCaptureMode.fromApi3];
+            const internalModes: string[] = [
+                LoadCaptureMode.fromApi1,
+                LoadCaptureMode.fromApi2,
+                LoadCaptureMode.fromApi3,
+            ];
             const externalModes: string[] = loadCaptureApiStore.apis.map(api => api.title);
             const modes: string[] = internalModes.concat(externalModes);
 
