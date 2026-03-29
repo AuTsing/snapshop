@@ -22,6 +22,7 @@ import NavbarVue from './components/Navbar.vue';
 body {
     padding: 0;
     margin: 0;
+    background-color: #000000;
 }
 .screen {
     width: 100vw;

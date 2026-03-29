@@ -6,8 +6,7 @@ import {
     QuestionCircleOutlined,
     SettingOutlined,
 } from '@ant-design/icons-vue';
-import { type CodepenOutlinedIconType } from '@ant-design/icons-vue/lib/icons/CodepenOutlined';
-import { type DefineComponent } from 'vue';
+import { h, type DefineComponent, type VNode } from 'vue';
 import PickerVue from '../view/Picker.vue';
 import CodeGeneratorVue from '../view/CodeGenerator.vue';
 import ComparerVue from '../view/Comparer.vue';
@@ -17,58 +16,58 @@ import HelpVue from '../view/Help.vue';
 
 export interface View {
     path: string;
-    key: string;
-    title: string;
-    icon: CodepenOutlinedIconType;
     content: DefineComponent<{}, {}, any>;
+    key: string;
+    icon: () => VNode;
+    title: string;
 }
 
 const picker: View = {
     path: '/',
-    key: 'picker',
-    title: '主面板',
-    icon: CodepenOutlined,
     content: PickerVue,
+    key: 'picker',
+    icon: () => h(CodepenOutlined),
+    title: '主面板',
 };
 
 const codeGenerator: View = {
     path: '/code-generator',
-    key: 'code-generator',
-    title: '生成代码',
-    icon: CodeOutlined,
     content: CodeGeneratorVue,
+    key: 'code-generator',
+    icon: () => h(CodeOutlined),
+    title: '生成代码',
 };
 
 const comparer: View = {
     path: '/comparer',
-    key: 'comparer',
-    title: '图片比较器',
-    icon: BlockOutlined,
     content: ComparerVue,
+    key: 'comparer',
+    icon: () => h(BlockOutlined),
+    title: '图片比较器',
 };
 
 const fontLab: View = {
     path: '/font-lab',
-    key: 'font-lab',
-    title: '字库',
-    icon: FontColorsOutlined,
     content: FontLabVue,
+    key: 'font-lab',
+    icon: () => h(FontColorsOutlined),
+    title: '字库',
 };
 
 const setting: View = {
     path: '/setting',
-    key: 'setting',
-    title: '设置',
-    icon: SettingOutlined,
     content: SettingVue,
+    key: 'setting',
+    icon: () => h(SettingOutlined),
+    title: '设置',
 };
 
 const help: View = {
     path: '/help',
-    key: 'help',
-    title: '帮助',
-    icon: QuestionCircleOutlined,
     content: HelpVue,
+    key: 'help',
+    icon: () => h(QuestionCircleOutlined),
+    title: '帮助',
 };
 
 export const views: View[] = [picker, codeGenerator, comparer, fontLab, setting, help];

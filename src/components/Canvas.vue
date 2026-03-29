@@ -10,7 +10,7 @@ import {
     CloudDownloadOutlined,
 } from '@ant-design/icons-vue';
 import { Empty, message } from 'ant-design-vue';
-import { Key } from 'ant-design-vue/es/_util/type';
+import { type Key } from 'ant-design-vue/es/_util/type';
 
 import { useCaptureStore } from '../store/Capture';
 import { useConfigurationStore } from '../store/Configuration';
@@ -181,6 +181,9 @@ defineExpose({
                         </a-tooltip>
                     </div>
                 </template>
+                <!-- <template #moreIcon>
+                    <RotateRightOutlined :style="{ color: inherit }" />
+                </template> -->
             </a-tabs>
             <template #indicator>
                 <LoadingOutlined :style="{ fontSize: '24px' }" />
@@ -225,5 +228,8 @@ defineExpose({
 }
 :deep(.ant-spin-dot) {
     margin: -12px !important;
+}
+:deep(.ant-tabs-nav-more) {
+    color: inherit;
 }
 </style>
