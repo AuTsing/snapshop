@@ -1,6 +1,12 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, toRaw } from 'vue';
-import { useConfigurationStore, defaultConfiguration, IConfigurationState, LoadCaptureMode, ColorMode } from '../store/Configuration';
+import {
+    useConfigurationStore,
+    defaultConfiguration,
+    LoadCaptureMode,
+    ColorMode,
+    type IConfigurationState,
+} from '../store/Configuration';
 import { useLoadCaptureApiStore } from '../store/LoadCaptureApi';
 import { debouncedWatch } from '@vueuse/core';
 import ResetButtonVue from '../shared/ResetButton.vue';
@@ -14,7 +20,11 @@ const loadCaptureApiStore = useLoadCaptureApiStore();
 const configurationModelRef = reactive<IConfigurationState>(Object.assign({}, configurationStore.$state));
 const loadingOtherCaptureMode = computed<boolean>(() => loadCaptureApiStore.loadingApis);
 const usableLoadCaptureMode = computed<{ value: string }[]>(() => {
-    const modes: { value: string }[] = [{ value: LoadCaptureMode.fromApi1 }, { value: LoadCaptureMode.fromApi2 }, { value: LoadCaptureMode.fromApi3 }];
+    const modes: { value: string }[] = [
+        { value: LoadCaptureMode.fromApi1 },
+        { value: LoadCaptureMode.fromApi2 },
+        { value: LoadCaptureMode.fromApi3 },
+    ];
     const externalModes = loadCaptureApiStore.apis.map(api => ({ value: api.title }));
     return modes.concat(externalModes);
 });
@@ -31,7 +41,7 @@ debouncedWatch(
         configurationStore.$patch(configuration);
         message.success('设置保存成功!');
     },
-    { debounce: 500 }
+    { debounce: 500 },
 );
 
 onMounted(() => {
@@ -47,11 +57,19 @@ onMounted(() => {
             <template #label>
                 <a-space>
                     <div>加载图片模式</div>
-                    <a-tooltip v-if="usableLoadCaptureMode.length > 3" title="有新的模式可用"><EllipsisOutlined /></a-tooltip>
+                    <a-tooltip v-if="usableLoadCaptureMode.length > 3" title="有新的模式可用"
+                        ><EllipsisOutlined
+                    /></a-tooltip>
                 </a-space>
             </template>
-            <a-select v-model:value="configurationModelRef.loadCaptureMode" :options="usableLoadCaptureMode" :loading="loadingOtherCaptureMode">
-                <template v-if="!loadingOtherCaptureMode && usableLoadCaptureMode.length > 3" #suffixIcon><AppstoreAddOutlined /></template>
+            <a-select
+                v-model:value="configurationModelRef.loadCaptureMode"
+                :options="usableLoadCaptureMode"
+                :loading="loadingOtherCaptureMode"
+            >
+                <template v-if="!loadingOtherCaptureMode && usableLoadCaptureMode.length > 3" #suffixIcon
+                    ><AppstoreAddOutlined
+                /></template>
             </a-select>
         </a-form-item>
         <a-form-item label="加载图片接口1">

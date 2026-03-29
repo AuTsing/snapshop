@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { ref, watch, StyleValue } from 'vue';
+import { ref, watch, type StyleValue } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useCoordinateStore } from '../store/Coordinate';
 import { useCaptureStore } from '../store/Capture';
 import { useConfigurationStore } from '../store/Configuration';
 import Jimp from 'jimp/browser/lib/jimp';
-import { ICoordinateState } from '../store/Coordinate';
+import { type ICoordinateState } from '../store/Coordinate';
 
 const defaultPreview =
     'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAANSURBVBhXY2BgYGAAAAAFAAGKM+MAAAAAAElFTkSuQmCC';

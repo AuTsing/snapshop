@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watchEffect, computed, StyleValue } from 'vue';
+import { ref, watchEffect, computed, type StyleValue } from 'vue';
 import { useMouseInElement, pausableWatch, useElementHover } from '@vueuse/core';
 import { useAreaStore } from '../store/Area';
 import { useCoordinateStore } from '../store/Coordinate';

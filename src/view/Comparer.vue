@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
 import { useCaptureStore } from '../store/Capture';
-import { ICapture } from '../store/Capture';
+import { type ICapture } from '../store/Capture';
 import Jimp from 'jimp/browser/lib/jimp';
 import { promiseTimeout } from '@vueuse/core';
 
@@ -46,7 +46,11 @@ const compare = async () => {
             const r2 = capture2.jimp.bitmap.data[idx + 0];
             const g2 = capture2.jimp.bitmap.data[idx + 1];
             const b2 = capture2.jimp.bitmap.data[idx + 2];
-            if (Math.abs(r1 - r2) <= tolerance.value && Math.abs(g1 - g2) <= tolerance.value && Math.abs(b1 - b2) <= tolerance.value) {
+            if (
+                Math.abs(r1 - r2) <= tolerance.value &&
+                Math.abs(g1 - g2) <= tolerance.value &&
+                Math.abs(b1 - b2) <= tolerance.value
+            ) {
                 jimp.setPixelColor(0xffffffff, x, y);
             } else {
                 jimp.setPixelColor(0xff0000ff, x, y);
@@ -71,7 +75,9 @@ watch(selectedCaptures, compare);
                             <a-image :width="200" :src="capture.base64" :alt="capture.title" />
                             <a-checkbox
                                 v-model:checked="capturesCheckeds[index]"
-                                :disabled="(capturesCheckeds[index] === false && selectedCaptures.length >= 2) || loading"
+                                :disabled="
+                                    (capturesCheckeds[index] === false && selectedCaptures.length >= 2) || loading
+                                "
                             ></a-checkbox>
                         </a-space>
                     </a-list-item>
@@ -84,14 +90,32 @@ watch(selectedCaptures, compare);
                     <a-button @click="handleClickReset" :disabled="loading">重置</a-button>
                     <div>容差</div>
                     <div :style="{ width: '200px' }">
-                        <a-slider v-model:value="tolerance" :min="0" :max="255" tooltipPlacement="bottom" :disabled="loading" @afterChange="compare" />
+                        <a-slider
+                            v-model:value="tolerance"
+                            :min="0"
+                            :max="255"
+                            tooltipPlacement="bottom"
+                            :disabled="loading"
+                            @afterChange="compare"
+                        />
                     </div>
                 </a-space>
             </div>
             <div class="show-result">
-                <a-empty v-if="selectedCaptures.length < 2" :image="Empty.PRESENTED_IMAGE_SIMPLE" description="选择两张图片比较" />
-                <LoadingOutlined v-if="selectedCaptures.length >= 2 && comparedCaptureBase64 === ''" :style="{ fontSize: '24px' }" />
-                <a-image v-if="selectedCaptures.length >= 2 && comparedCaptureBase64 !== ''" :width="500" :src="comparedCaptureBase64" />
+                <a-empty
+                    v-if="selectedCaptures.length < 2"
+                    :image="Empty.PRESENTED_IMAGE_SIMPLE"
+                    description="选择两张图片比较"
+                />
+                <LoadingOutlined
+                    v-if="selectedCaptures.length >= 2 && comparedCaptureBase64 === ''"
+                    :style="{ fontSize: '24px' }"
+                />
+                <a-image
+                    v-if="selectedCaptures.length >= 2 && comparedCaptureBase64 !== ''"
+                    :width="500"
+                    :src="comparedCaptureBase64"
+                />
             </div>
         </a-col>
     </a-row>
