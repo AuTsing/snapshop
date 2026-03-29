@@ -3,7 +3,7 @@ import { ref } from 'vue';
 import { views } from '../routes/views';
 
 const collapsed = ref<boolean>(true);
-const selectedKeys = ref<string[]>([views[0].key]);
+const selectedKeys = ref<string[]>([views[0].path]);
 </script>
 
 <template>
@@ -13,7 +13,7 @@ const selectedKeys = ref<string[]>([views[0].key]);
         </div>
         <a-menu v-model:selectedKeys="selectedKeys">
             <a-menu-item v-for="view in views" :key="view.key">
-                <router-link :to="'/' + view.key">
+                <router-link :to="view.path">
                     <component :is="view.icon" />
                     <span>{{ view.title }}</span>
                 </router-link>

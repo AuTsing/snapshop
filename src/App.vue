@@ -1,18 +1,21 @@
 <script setup lang="ts">
+import { theme } from 'ant-design-vue';
 import NavbarVue from './components/Navbar.vue';
 </script>
 
 <template>
-    <a-row class="screen" :wrap="false">
-        <a-col>
-            <NavbarVue />
-        </a-col>
-        <a-col flex="1 1 auto">
-            <div :style="{ height: '100%', overflowY: 'auto' }">
-                <router-view></router-view>
-            </div>
-        </a-col>
-    </a-row>
+    <a-config-provider :theme="{ algorithm: theme.darkAlgorithm }">
+        <a-row class="screen" :wrap="false">
+            <a-col>
+                <NavbarVue />
+            </a-col>
+            <a-col flex="1 1 auto">
+                <div :style="{ height: '100%', overflowY: 'auto' }">
+                    <router-view></router-view>
+                </div>
+            </a-col>
+        </a-row>
+    </a-config-provider>
 </template>
 
 <style>
