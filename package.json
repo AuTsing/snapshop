@@ -7,8 +7,8 @@
         "dev": "vp dev",
         "build": "vue-tsc -b && vp build",
         "preview": "vp preview",
-        "build:vscode": "vue-tsc -b && vp build --config vite.config.vscode.ts --mode vscode-production",
-        "watch:vscode": "vp build --config vite.config.vscode.ts --mode vscode-development"
+        "build:vscode": "vue-tsc -b && vp build --mode vscode-production",
+        "watch:vscode": "vp build --mode vscode-development"
     },
     "devDependencies": {
         "@types/node": "^22.0.0",

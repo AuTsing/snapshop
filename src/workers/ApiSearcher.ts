@@ -24,7 +24,7 @@ import Axios from 'axios';
                     }
                 })
                 .then(() => (urls = urls.filter(u => u !== url)))
-                .catch(e => {});
+                .catch((_e: Error) => {});
         });
         await promiseTimeout(1000);
     }

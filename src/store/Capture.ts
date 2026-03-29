@@ -151,7 +151,7 @@ export const useCaptureStore = defineStore('capture', {
                 } else {
                     throw new Error('不支持的接口协议 ' + url.protocol);
                 }
-                const jimp = await Jimp.read(Buffer.from(arrayBuffer));
+                const jimp = await Jimp.read(arrayBuffer);
                 const base64 = await jimp.getBase64Async(Jimp.MIME_PNG);
                 const capture = this.addCapture(jimp, base64);
                 return capture.key;
@@ -170,7 +170,7 @@ export const useCaptureStore = defineStore('capture', {
         },
         async addCaptureFromFile(file: File) {
             const buffer = await readFileSync(file);
-            const jimp = await Jimp.read(Buffer.from(buffer));
+            const jimp = await Jimp.read(buffer);
             const base64 = await jimp.getBase64Async(Jimp.MIME_PNG);
             const capture = this.addCapture(jimp, base64);
             return capture.key;
@@ -180,7 +180,8 @@ export const useCaptureStore = defineStore('capture', {
 
             const bData = activeJimp.bitmap.data;
             const bDataLength = bData.length;
-            const dstBuffer = Buffer.allocUnsafe(bDataLength);
+            const dstBuffer = new ArrayBuffer(bDataLength);
+            const dstView = new DataView(dstBuffer);
 
             const w = activeJimp.bitmap.width;
             const h = activeJimp.bitmap.height;
@@ -189,7 +190,7 @@ export const useCaptureStore = defineStore('capture', {
             let dstOffset = 0;
             for (let x = 0; x < w; x++) {
                 for (let y = h - 1; y >= 0; y--) {
-                    dstBuffer.writeUInt32BE(bData.readUInt32BE((w * y + x) << 2), dstOffset);
+                    dstView.setUint32(dstOffset, bData.readUInt32BE((w * y + x) << 2));
                     dstOffset += dstOffsetStep;
                 }
             }
