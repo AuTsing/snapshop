@@ -1,6 +1,6 @@
 import { createApp } from 'vue';
 import { createPinia } from 'pinia';
-import { router } from './route/routes';
+import { router } from './routes/router';
 import { storage } from './plugins/Storage';
 import { clipboard } from './plugins/Clipboard';
 import { vscode } from './plugins/Vscode';

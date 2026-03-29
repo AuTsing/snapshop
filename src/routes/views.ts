@@ -16,6 +16,7 @@ import SettingVue from '../view/Setting.vue';
 import HelpVue from '../view/Help.vue';
 
 export interface View {
+    path: string;
     key: string;
     title: string;
     icon: CodepenOutlinedIconType;
@@ -23,6 +24,7 @@ export interface View {
 }
 
 const picker: View = {
+    path: '/',
     key: 'picker',
     title: '主面板',
     icon: CodepenOutlined,
@@ -30,6 +32,7 @@ const picker: View = {
 };
 
 const codeGenerator: View = {
+    path: '/code-generator',
     key: 'code-generator',
     title: '生成代码',
     icon: CodeOutlined,
@@ -37,6 +40,7 @@ const codeGenerator: View = {
 };
 
 const comparer: View = {
+    path: '/comparer',
     key: 'comparer',
     title: '图片比较器',
     icon: BlockOutlined,
@@ -44,6 +48,7 @@ const comparer: View = {
 };
 
 const fontLab: View = {
+    path: '/font-lab',
     key: 'font-lab',
     title: '字库',
     icon: FontColorsOutlined,
@@ -51,6 +56,7 @@ const fontLab: View = {
 };
 
 const setting: View = {
+    path: '/setting',
     key: 'setting',
     title: '设置',
     icon: SettingOutlined,
@@ -58,6 +64,7 @@ const setting: View = {
 };
 
 const help: View = {
+    path: '/help',
     key: 'help',
     title: '帮助',
     icon: QuestionCircleOutlined,
