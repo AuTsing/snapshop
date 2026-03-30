@@ -220,12 +220,12 @@ export const useCodeStore = defineStore('code', {
                         break;
 
                     case GenerateActions.Pointx:
-                        if (step.index == 'n') {
+                        if (step.index === 'n') {
                             code = code + '$p[n][x]';
-                        } else if (records[step.index - 1] == null) {
+                        } else if (records[step.index - 1] === null) {
                             code = code + `$p[${step.index}][x]`;
                         } else {
-                            if (records[step.deltaIndex - 1] != null) {
+                            if (records[step.deltaIndex - 1] !== null) {
                                 code = code + (records[step.index - 1].x - records[step.deltaIndex - 1].x).toString();
                             } else {
                                 code = code + records[step.index - 1].x.toString();
@@ -234,12 +234,12 @@ export const useCodeStore = defineStore('code', {
                         break;
 
                     case GenerateActions.Pointy:
-                        if (step.index == 'n') {
+                        if (step.index === 'n') {
                             code = code + '$p[n][x]';
-                        } else if (records[step.index - 1] == null) {
+                        } else if (records[step.index - 1] === null) {
                             code = code + `$p[${step.index}][y]`;
                         } else {
-                            if (records[step.deltaIndex - 1] != null) {
+                            if (records[step.deltaIndex - 1] !== null) {
                                 code = code + (records[step.index - 1].y - records[step.deltaIndex - 1].y).toString();
                             } else {
                                 code = code + records[step.index - 1].y.toString();
@@ -248,9 +248,9 @@ export const useCodeStore = defineStore('code', {
                         break;
 
                     case GenerateActions.Pointc:
-                        if (step.index == 'n') {
+                        if (step.index === 'n') {
                             code = code + '$p[n][c]';
-                        } else if (records[step.index - 1] == null) {
+                        } else if (records[step.index - 1] === null) {
                             code = code + `$p[${step.index}][c]`;
                         } else {
                             const cNative = records[step.index - 1].cNative;
