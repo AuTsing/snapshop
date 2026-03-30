@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, watch, type StyleValue } from 'vue';
-import { Jimp, JimpMime, ResizeStrategy, type JimpInstance } from 'jimp';
+import Jimp from 'jimp/browser/lib/jimp';
 import { storeToRefs } from 'pinia';
 import { useCoordinateStore } from '../store/Coordinate';
 import { useCaptureStore } from '../store/Capture';
@@ -18,7 +18,7 @@ const coordinateStore = useCoordinateStore();
 const captureStore = useCaptureStore();
 const configurationStore = useConfigurationStore();
 
-const zoomCaptureJimp = ref<JimpInstance | null>();
+const zoomCaptureJimp = ref<Jimp | null>();
 const zoomCaptureBase64 = ref<string>('');
 const sameCoordinates = ref<ICoordinateState[]>([]);
 const { x, y } = storeToRefs(coordinateStore);
@@ -38,7 +38,7 @@ watch([x, y], async () => {
     const x0 = x.value;
     const y0 = y.value;
     if (activeJimp && x0 > -1 && y0 > -1) {
-        const jimp = new Jimp({ width: zoomSideLength, height: zoomSideLength, color: 0x000000 });
+        const jimp = new Jimp(zoomSideLength, zoomSideLength, 0);
         for (let i = -zoomRadius; i <= zoomRadius; ++i) {
             for (let j = -zoomRadius; j <= zoomRadius; ++j) {
                 const xx = i + x0;
@@ -49,12 +49,8 @@ watch([x, y], async () => {
             }
         }
         const unResizedJimp = jimp.clone();
-        const resizedJimp = jimp.resize({
-            w: zoomSideLengthDisplay,
-            h: zoomSideLengthDisplay,
-            mode: ResizeStrategy.NEAREST_NEIGHBOR,
-        });
-        const resizedBase64 = await resizedJimp.getBase64(JimpMime.png);
+        const resizedJimp = jimp.resize(zoomSideLengthDisplay, zoomSideLengthDisplay, Jimp.RESIZE_NEAREST_NEIGHBOR);
+        const resizedBase64 = await resizedJimp.getBase64Async(Jimp.MIME_PNG);
         zoomCaptureJimp.value = unResizedJimp;
         zoomCaptureBase64.value = resizedBase64;
     } else {

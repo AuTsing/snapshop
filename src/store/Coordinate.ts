@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { intToRGBA } from 'jimp';
+import { intToRGBA } from 'jimp/browser/lib/jimp';
 import { useConfigurationStore } from './Configuration';
 import { useCaptureStore } from './Capture';
 import { ColorMode } from './Configuration';

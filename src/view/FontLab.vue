@@ -97,12 +97,12 @@ const handleClickAddFont = () => {
         }
     });
 
-    const cropedJimp = previewJimp.crop({
-        x: range.x1,
-        y: range.y1,
-        w: Math.abs(range.x2 - range.x1 + 1),
-        h: Math.abs(range.y2 - range.y1 + 1),
-    });
+    const cropedJimp = previewJimp.crop(
+        range.x1,
+        range.y1,
+        Math.abs(range.x2 - range.x1 + 1),
+        Math.abs(range.y2 - range.y1 + 1),
+    );
     for (let x = 0; x < cropedJimp.bitmap.width; x++) {
         for (let y = 0; y < cropedJimp.bitmap.height; y++) {
             if (cropedJimp.getPixelColor(x, y) === 0x000000ff) {

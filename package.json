@@ -23,7 +23,7 @@
         "@ant-design/icons-vue": "^7.0.0",
         "@vueuse/core": "^14.0.0",
         "axios": "^1.0.0",
-        "jimp": "^1.0.0",
+        "jimp": "0.16.1",
         "pinia": "^3.0.0",
         "unplugin-vue-components": "^32.0.0",
         "vue-router": "^5.0.0"

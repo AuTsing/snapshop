@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { Jimp, JimpMime, intToRGBA, rgbaToInt, type JimpInstance } from 'jimp';
+import Jimp, { intToRGBA, rgbaToInt } from 'jimp/browser/lib/jimp';
 import { useRecordStore } from './Record';
 import { useAreaStore } from './Area';
 import { useCaptureStore } from './Capture';
@@ -17,7 +17,7 @@ export interface IFontLabState {
     tolerance: number;
     customCast: string;
     castMode: ICastMode;
-    previewJimp: JimpInstance | null;
+    previewJimp: Jimp | null;
     previewBase64: string;
     fonts: IFont[];
 }
@@ -140,7 +140,7 @@ export const useFontLabStore = defineStore('fontLab', {
             const yMin = Math.min(area.y1, area.y2);
             const xD = Math.abs(area.x1 - area.x2);
             const yD = Math.abs(area.y1 - area.y2);
-            const jimp = new Jimp({ width: xD + 1, height: yD + 1, color: 0x000000 });
+            const jimp = new Jimp(xD + 1, yD + 1, 0);
             jimp.scan(0, 0, jimp.bitmap.width, jimp.bitmap.height, (x, y) => {
                 const rgba = intToRGBA(activeJimp.getPixelColor(x + xMin, y + yMin));
                 if (
@@ -156,7 +156,7 @@ export const useFontLabStore = defineStore('fontLab', {
                     jimp.setPixelColor(0xffffffff, x, y);
                 }
             });
-            const base64 = await jimp.getBase64(JimpMime.png);
+            const base64 = await jimp.getBase64Async(Jimp.MIME_PNG);
             this.previewJimp = jimp;
             this.previewBase64 = base64;
         },

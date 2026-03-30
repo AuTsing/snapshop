@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { intToRGBA } from 'jimp';
+import { intToRGBA } from 'jimp/browser/lib/jimp';
 import { useRecordStore } from './Record';
 import { useAreaStore } from './Area';
 import { useStorage } from '../plugins/Storage';

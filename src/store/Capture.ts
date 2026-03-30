@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { Jimp, JimpMime, type JimpInstance } from 'jimp';
+import Jimp from 'jimp/browser/lib/jimp';
 import Axios, { AxiosError } from 'axios';
 import { message } from 'ant-design-vue';
 
@@ -13,7 +13,7 @@ export interface ICaptureState {
 export interface ICapture {
     key: string;
     title: string;
-    jimp: JimpInstance;
+    jimp: Jimp;
     base64: string;
 }
 
@@ -113,12 +113,12 @@ export const useCaptureStore = defineStore('capture', {
         activeIndex(): number {
             return this.captures.findIndex(capture => capture.key === this.activeKey);
         },
-        activeJimp(): JimpInstance {
+        activeJimp(): Jimp {
             return this.captures.find(capture => capture.key === this.activeKey)!.jimp;
         },
     },
     actions: {
-        setCapture(jimp: JimpInstance, base64: string, key?: string) {
+        setCapture(jimp: Jimp, base64: string, key?: string) {
             key = key ?? this.activeKey;
             const index = this.captures.findIndex(capture => capture.key === key);
             if (index > -1) {
@@ -132,7 +132,7 @@ export const useCaptureStore = defineStore('capture', {
                 this.captures = [];
             }
         },
-        addCapture(jimp: JimpInstance, base64: string) {
+        addCapture(jimp: Jimp, base64: string) {
             const capture: ICapture = {
                 key: `tab${this.tabIndex}`,
                 title: `图片${this.tabIndex}`,
@@ -155,8 +155,8 @@ export const useCaptureStore = defineStore('capture', {
                     throw new Error('不支持的接口协议 ' + url.protocol);
                 }
                 const jimp = await Jimp.read(arrayBuffer);
-                const base64 = await jimp.getBase64(JimpMime.png);
-                const capture = this.addCapture(jimp as JimpInstance, base64);
+                const base64 = await jimp.getBase64Async(Jimp.MIME_PNG);
+                const capture = this.addCapture(jimp, base64);
                 return capture.key;
             } catch (e) {
                 if (e instanceof Error) {
@@ -171,8 +171,8 @@ export const useCaptureStore = defineStore('capture', {
             try {
                 const ab = await readFromFile(file);
                 const jimp = await Jimp.read(ab);
-                const base64 = await jimp.getBase64(JimpMime.png);
-                const capture = this.addCapture(jimp as JimpInstance, base64);
+                const base64 = await jimp.getBase64Async(Jimp.MIME_PNG);
+                const capture = this.addCapture(jimp, base64);
                 return capture.key;
             } catch (e) {
                 if (e instanceof Error) {
@@ -187,9 +187,9 @@ export const useCaptureStore = defineStore('capture', {
             const activeJimp = this.activeJimp;
 
             const rotatedJimp = activeJimp.rotate(-90);
-            const rotatedBase64 = await rotatedJimp.getBase64(JimpMime.png);
+            const rotatedBase64 = await rotatedJimp.getBase64Async(Jimp.MIME_PNG);
 
-            this.setCapture(rotatedJimp as JimpInstance, rotatedBase64);
+            this.setCapture(rotatedJimp, rotatedBase64);
         },
     },
 });
