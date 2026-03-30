@@ -3,7 +3,7 @@ import { ref, computed, watch } from 'vue';
 import { promiseTimeout } from '@vueuse/core';
 import Jimp from 'jimp/browser/lib/jimp';
 import { useCaptureStore } from '../store/Capture';
-import { type ICapture } from '../store/Capture';
+import { type Capture } from '../store/Capture';
 
 import { Empty } from 'ant-design-vue';
 import { LoadingOutlined } from '@ant-design/icons-vue';
@@ -13,7 +13,7 @@ const captureStore = useCaptureStore();
 const captures = computed(() => captureStore.captures);
 const capturesCheckeds = ref<boolean[]>(Array(captures.value.length).fill(false));
 const selectedCaptures = computed(() => {
-    const selected: ICapture[] = [];
+    const selected: Capture[] = [];
     captures.value.forEach((capture, index) => {
         if (capturesCheckeds.value[index] === true) {
             selected.push(capture);

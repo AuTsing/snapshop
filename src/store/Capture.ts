@@ -2,29 +2,73 @@ import { defineStore } from 'pinia';
 import Jimp from 'jimp/browser/lib/jimp';
 import Axios, { AxiosError } from 'axios';
 import { message } from 'ant-design-vue';
+import { encode } from 'cbor-x/encode';
+import { decode } from 'cbor-x/decode';
 
-export interface ICaptureState {
+export interface CaptureState {
     tabIndex: number;
-    captures: ICapture[];
+    captures: Capture[];
     activeKey: string;
     loading: boolean;
 }
 
-export interface ICapture {
+export interface Capture {
     key: string;
     title: string;
     jimp: Jimp;
     base64: string;
 }
 
-export interface SnapshotCommand {
-    cmd: 'snapshot';
-    data: { file: number[] };
+type WsMessageData = SnapshotData | SnapshotResultData;
+
+interface SnapshotData {}
+
+interface SnapshotResultData {
+    readonly success: boolean;
+    readonly message: string;
+    readonly file: Uint8Array;
 }
 
-export interface ResultCommand {
-    cmd: 'result';
-    data: { success: boolean; message: string };
+type Cbor = ['Snapshot', Snapshot] | ['SnapshotResult', SnapshotResult];
+
+type EncodedCbor = ['Snapshot', Map<string, any>] | ['SnapshotResult', Map<string, any>];
+
+interface WsMessage {
+    readonly id: string;
+    readonly data: WsMessageData;
+    toCBOR(): EncodedCbor;
+}
+
+class Snapshot implements WsMessage {
+    static readonly cmd: string = 'Snapshot';
+
+    readonly id: string;
+    readonly data: SnapshotData;
+
+    constructor(id: string, data: SnapshotData) {
+        this.id = id;
+        this.data = data;
+    }
+
+    toCBOR(): EncodedCbor {
+        return ['Snapshot', new Map(Object.entries(this))];
+    }
+}
+
+class SnapshotResult implements WsMessage {
+    static readonly cmd: string = 'SnapshotResult';
+
+    readonly id: string;
+    readonly data: SnapshotResultData;
+
+    constructor(id: string, data: SnapshotResultData) {
+        this.id = id;
+        this.data = data;
+    }
+
+    toCBOR(): EncodedCbor {
+        return ['SnapshotResult', new Map(Object.entries(this))];
+    }
 }
 
 async function readFromFile(file: File): Promise<ArrayBuffer> {
@@ -55,55 +99,77 @@ async function readFromHttp(url: URL): Promise<ArrayBuffer> {
     }
 }
 
-export function readFromWs(url: URL): Promise<ArrayBuffer> {
-    return new Promise((resolve, reject) => {
-        const wsc = new WebSocket(url.href);
-        wsc.addEventListener('open', _ => {
-            const cmd: SnapshotCommand = {
-                cmd: 'snapshot',
-                data: {
-                    file: [],
-                },
-            };
-            wsc.send(JSON.stringify(cmd));
-        });
-        wsc.addEventListener('message', ev => {
-            const cmd = JSON.parse(ev.data);
-            switch (cmd.cmd) {
-                case 'result':
-                    const resultCommand = cmd as ResultCommand;
-                    if (resultCommand.data.success === false) {
-                        reject(new Error(cmd.data.message));
-                        wsc.close();
-                    }
-                    break;
-                case 'snapshot':
-                    const snapshotCommand = cmd as SnapshotCommand;
-                    const u8Array = Uint8Array.from(snapshotCommand.data.file);
-                    resolve(u8Array.buffer);
-                    wsc.close();
-                    break;
-                default:
-                    reject(new Error('未知的命令: ' + cmd.cmd));
-                    wsc.close();
-                    break;
-            }
-        });
-        wsc.addEventListener('error', _ => {
-            wsc.close();
-            reject(new Error('无法连接 WS 服务器'));
-        });
-        setTimeout(() => {
-            if (wsc.readyState === wsc.OPEN) {
-                wsc.close();
-                reject(new Error('连接 WS 服务器超时'));
-            }
-        }, 10000);
+function createDeferred<T>(): [Promise<T>, (value: T | PromiseLike<T>) => void, (reason?: any) => void] {
+    let resolve, reject;
+
+    const promise = new Promise<T>((res, rej) => {
+        resolve = res;
+        reject = rej;
     });
+
+    return [promise, resolve!!, reject!!];
+}
+
+async function readFromWs(url: URL): Promise<ArrayBuffer> {
+    const [opened, resolveOpened, rejectOpened] = createDeferred<void>();
+    const [gotMessage, resolveGotMessage, rejectGotMessage] = createDeferred<ArrayBuffer>();
+
+    const id = crypto.randomUUID();
+    const conn = new WebSocket(url.href);
+    conn.binaryType = 'arraybuffer';
+    conn.addEventListener('open', _ => {
+        resolveOpened();
+    });
+    conn.addEventListener('message', ev => {
+        resolveGotMessage(ev.data);
+    });
+    conn.addEventListener('error', _ => {
+        const e = new Error('连接 WS 服务器失败');
+        rejectOpened(e);
+        rejectGotMessage(e);
+    });
+    setTimeout(() => {
+        if (conn.readyState === conn.OPEN) {
+            const e = new Error('连接 WS 服务器超时');
+            rejectOpened(e);
+            rejectGotMessage(e);
+        }
+    }, 10000);
+
+    try {
+        const message = new Snapshot(id, {});
+        const messageBytes = encode(message.toCBOR());
+
+        await opened;
+        conn.send(messageBytes);
+
+        const newMessage = await gotMessage;
+        const cbor = decode(new Uint8Array(newMessage)) as Cbor;
+
+        switch (cbor[0]) {
+            case 'SnapshotResult':
+                const message = new SnapshotResult(cbor[1].id, cbor[1].data);
+                if (message.id !== id) {
+                    throw new Error(`消息ID不匹配: ${message.id} ${id}`);
+                }
+                if (message.data.success !== true) {
+                    throw new Error(`截图失败: ${message.data.message.split(/\r?\n/)[0]}`);
+                }
+                return message.data.file.slice().buffer;
+            default:
+                throw new Error(`未知类型: ${cbor}`);
+        }
+    } catch (e) {
+        rejectOpened(e);
+        rejectGotMessage(e);
+        throw e;
+    } finally {
+        conn.close();
+    }
 }
 
 export const useCaptureStore = defineStore('capture', {
-    state: (): ICaptureState => ({
+    state: (): CaptureState => ({
         tabIndex: 1,
         captures: [],
         activeKey: 'blank',
@@ -133,7 +199,7 @@ export const useCaptureStore = defineStore('capture', {
             }
         },
         addCapture(jimp: Jimp, base64: string) {
-            const capture: ICapture = {
+            const capture: Capture = {
                 key: `tab${this.tabIndex}`,
                 title: `图片${this.tabIndex}`,
                 jimp: jimp,
