@@ -6,13 +6,13 @@ import {
     useStorage as vueUseStorage,
     useStorageAsync as vueUseStorageAsync,
 } from '@vueuse/core';
-import { type VscodeMessage, VscodeMessageCommand, useVscode, Vscode } from './Vscode';
+import { type VscodeMessage, VscodeMessageCommand, Vscode } from './Vscode';
 
 export class VscodeStorage implements StorageLikeAsync {
     private readonly vscode: Vscode;
 
     constructor() {
-        this.vscode = useVscode();
+        this.vscode = Vscode.getInstance();
     }
 
     getItem(key: string): Awaitable<string | null> {

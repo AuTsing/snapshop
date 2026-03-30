@@ -1,4 +1,4 @@
-import { type App, type Plugin, inject } from 'vue';
+import { inject, type App, type Plugin } from 'vue';
 
 export const VscodeMessageCommand = {
     GetItem: 'GetItem',
