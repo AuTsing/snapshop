@@ -44,44 +44,45 @@ const generateCodeHotkeys = [
         <a-typography-paragraph> Snapshop 支持从 HTTP / HTTPS / WS 加载图片。 </a-typography-paragraph>
         <a-typography-paragraph> 这需要你运行一个服务程序以提供图片。 </a-typography-paragraph>
         <a-typography-title :level="4">从 HTTP(S) 加载图片</a-typography-title>
-        <a-typography-paragraph> Snapshop 会请求 ArrayBuffer 的格式类型，请从接口直接返回图片。 </a-typography-paragraph>
+        <a-typography-paragraph>
+            Snapshop 会请求 ArrayBuffer 的格式类型，请从接口直接返回图片。
+        </a-typography-paragraph>
         <a-typography-paragraph> 请正确配置 CORS ，否则，这将可能导致无法加载图片。 </a-typography-paragraph>
-        <a-typography-link href="https://developer.mozilla.org/zh-CN/docs/Web/HTTP/CORS" target="_blank"> 什么是 CORS ？ </a-typography-link>
+        <a-typography-link href="https://developer.mozilla.org/zh-CN/docs/Web/HTTP/CORS" target="_blank">
+            什么是 CORS ？
+        </a-typography-link>
         <a-typography-title :level="4">从 WS 加载图片</a-typography-title>
-        <a-typography-paragraph> WS 是更为推荐远程加载图片方式，交互请适配以下协议。 </a-typography-paragraph>
-        <a-typography-paragraph> Snapshop 截图时会发送： </a-typography-paragraph>
+        <a-typography-paragraph> 推荐使用 WS 协议加载远程加载图片方式，请适配以下接口。 </a-typography-paragraph>
+        <a-typography-paragraph> 请将以下消息使用 CBOR 编码然后再发送。 </a-typography-paragraph>
+        <a-typography-link href="https://cbor.io" target="_blank"> 什么是 CBOR ？ </a-typography-link>
+        <a-typography-paragraph> Snapshop 会发送： </a-typography-paragraph>
         <a-typography-paragraph>
             <pre>
-{
-    cmd: 'snapshot',
-    data: { file: [] }
-}</pre
+[
+    "Snapshot",
+    {
+        cmd: "Snapshot",
+        id: string,
+        data: {},
+    }
+]</pre
             >
         </a-typography-paragraph>
-        <a-typography-paragraph> 服务器成功时应响应： </a-typography-paragraph>
+        <a-typography-paragraph> 服务器需响应： </a-typography-paragraph>
         <a-typography-paragraph>
             <pre>
-{
-    cmd: 'result',
-    data: { success: true, message: '' }
-}</pre
-            >
-        </a-typography-paragraph>
-        <a-typography-paragraph>
-            <pre>
-{
-    cmd: 'snapshot',
-    data: { file: [0,0,0,...] }
-}</pre
-            >
-        </a-typography-paragraph>
-        <a-typography-paragraph> 服务器失败时应响应： </a-typography-paragraph>
-        <a-typography-paragraph>
-            <pre>
-{
-    cmd: 'result',
-    data: { success: false, message: '失败原因' }
-}</pre
+[
+    "SnapshotResult",
+    {   
+        cmd: "SnapshotResult",
+        id: string,
+        data: {
+            success: boolean,
+            message: string,
+            file: Uint8Array,
+        },
+    }
+]</pre
             >
         </a-typography-paragraph>
 
@@ -89,14 +90,26 @@ const generateCodeHotkeys = [
         <a-typography-title :level="4">快捷键</a-typography-title>
         <a-typography-paragraph> Snapshop 支持 WASD / 上下左右 两套操作方案。 </a-typography-paragraph>
         <a-typography-paragraph>
-            <a-table :columns="sampleHotkeysColumns" :data-source="sampleHotkeys" bordered size="small" :pagination="false"></a-table>
+            <a-table
+                :columns="sampleHotkeysColumns"
+                :data-source="sampleHotkeys"
+                bordered
+                size="small"
+                :pagination="false"
+            ></a-table>
         </a-typography-paragraph>
 
         <a-typography-title :level="2">生成代码</a-typography-title>
         <a-typography-title :level="4">快捷键</a-typography-title>
         <a-typography-paragraph> 在主面板可以通过快捷键生成代码。 </a-typography-paragraph>
         <a-typography-paragraph>
-            <a-table :columns="generateCodeHotkeysColumns" :data-source="generateCodeHotkeys" bordered size="small" :pagination="false"></a-table>
+            <a-table
+                :columns="generateCodeHotkeysColumns"
+                :data-source="generateCodeHotkeys"
+                bordered
+                size="small"
+                :pagination="false"
+            ></a-table>
         </a-typography-paragraph>
 
         <a-typography-title :level="4">组合式可视化生成代码</a-typography-title>
@@ -105,7 +118,9 @@ const generateCodeHotkeys = [
             组成，你需要添加步骤进流程，随后代码生成器会自动根据步骤对数据进行处理输出最终的代码结果。
         </a-typography-paragraph>
         <a-typography-paragraph> 具体步骤使用方法请参考默认流程 1 和流程 2 。 </a-typography-paragraph>
-        <a-typography-paragraph> `删除` 步骤会在完成所有 `重复` 步骤后，并在其余步骤执行前执行。 </a-typography-paragraph>
+        <a-typography-paragraph>
+            `删除` 步骤会在完成所有 `重复` 步骤后，并在其余步骤执行前执行。
+        </a-typography-paragraph>
     </a-typography>
 </template>
 
