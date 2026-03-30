@@ -1,8 +1,8 @@
 import { defineStore } from 'pinia';
+import { Jimp, JimpMime, intToRGBA, rgbaToInt, type JimpInstance } from 'jimp';
 import { useRecordStore } from './Record';
 import { useAreaStore } from './Area';
 import { useCaptureStore } from './Capture';
-import Jimp from 'jimp/browser/lib/jimp';
 import { displayColor } from './Coordinate';
 import { ColorMode } from './Configuration';
 
@@ -17,7 +17,7 @@ export interface IFontLabState {
     tolerance: number;
     customCast: string;
     castMode: ICastMode;
-    previewJimp?: Jimp;
+    previewJimp: JimpInstance | null;
     previewBase64: string;
     fonts: IFont[];
 }
@@ -39,7 +39,7 @@ export const useFontLabStore = defineStore('fontLab', {
         tolerance: 0,
         customCast: '',
         castMode: ICastMode.auto,
-        previewJimp: undefined,
+        previewJimp: null,
         previewBase64: '',
         fonts: [],
     }),
@@ -47,7 +47,7 @@ export const useFontLabStore = defineStore('fontLab', {
         castRgb(): TCastRgb {
             const record = useRecordStore();
             const rgbs = record.records
-                .map(record => Jimp.intToRGBA(record.cNative))
+                .map(record => intToRGBA(record.cNative))
                 .reduce(
                     (last: TCastRgb, rgb) => {
                         last.r.push(rgb.r);
@@ -84,8 +84,8 @@ export const useFontLabStore = defineStore('fontLab', {
             if (record.records.length > 0) {
                 const castRgb = this.castRgb;
 
-                const cast1 = Jimp.rgbaToInt(castRgb.r[0], castRgb.g[0], castRgb.b[0], 255);
-                const cast2 = Jimp.rgbaToInt(castRgb.r[1], castRgb.g[1], castRgb.b[1], 255);
+                const cast1 = rgbaToInt(castRgb.r[0], castRgb.g[0], castRgb.b[0], 255);
+                const cast2 = rgbaToInt(castRgb.r[1], castRgb.g[1], castRgb.b[1], 255);
                 const c1 = displayColor(cast1, ColorMode.hex).toUpperCase();
                 const c2 = displayColor(cast2, ColorMode.hex).toUpperCase();
                 return `${c1} , ${c2}`;
@@ -99,8 +99,8 @@ export const useFontLabStore = defineStore('fontLab', {
             }
             const hex1 = parseInt(this.customCast.slice(0, 6) + '00', 16);
             const hex2 = parseInt(this.customCast.slice(-6) + '00', 16);
-            const rgba1 = Jimp.intToRGBA(hex1);
-            const rgba2 = Jimp.intToRGBA(hex2);
+            const rgba1 = intToRGBA(hex1);
+            const rgba2 = intToRGBA(hex2);
             const customCastRgb: TCastRgb = {
                 r: [rgba1.r, rgba2.r],
                 g: [rgba1.g, rgba2.g],
@@ -124,7 +124,7 @@ export const useFontLabStore = defineStore('fontLab', {
             const capture = useCaptureStore();
 
             if ((record.records.length === 0 && this.customCast === '') || Object.values(area).some(p => p === -1)) {
-                this.previewJimp = undefined;
+                this.previewJimp = null;
                 this.previewBase64 = '';
                 return;
             }
@@ -135,14 +135,14 @@ export const useFontLabStore = defineStore('fontLab', {
                 g: [rgb.g[0] - rgb.g[1], rgb.g[0] + rgb.g[1]],
                 b: [rgb.b[0] - rgb.b[1], rgb.b[0] + rgb.b[1]],
             };
-            const activeJimp: Jimp = capture.activeJimp;
+            const activeJimp = capture.activeJimp;
             const xMin = Math.min(area.x1, area.x2);
             const yMin = Math.min(area.y1, area.y2);
             const xD = Math.abs(area.x1 - area.x2);
             const yD = Math.abs(area.y1 - area.y2);
-            const jimp = new Jimp(xD + 1, yD + 1, 0);
+            const jimp = new Jimp({ width: xD + 1, height: yD + 1, color: 0x000000 });
             jimp.scan(0, 0, jimp.bitmap.width, jimp.bitmap.height, (x, y) => {
-                const rgba = Jimp.intToRGBA(activeJimp.getPixelColor(x + xMin, y + yMin));
+                const rgba = intToRGBA(activeJimp.getPixelColor(x + xMin, y + yMin));
                 if (
                     calcRgb.r[0] <= rgba.r &&
                     calcRgb.r[1] >= rgba.r &&
@@ -156,7 +156,7 @@ export const useFontLabStore = defineStore('fontLab', {
                     jimp.setPixelColor(0xffffffff, x, y);
                 }
             });
-            const base64 = await jimp.getBase64Async(Jimp.MIME_PNG);
+            const base64 = await jimp.getBase64(JimpMime.png);
             this.previewJimp = jimp;
             this.previewBase64 = base64;
         },

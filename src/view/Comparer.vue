@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
+import { promiseTimeout } from '@vueuse/core';
+import { Jimp, JimpMime } from 'jimp';
 import { useCaptureStore } from '../store/Capture';
 import { type ICapture } from '../store/Capture';
-import Jimp from 'jimp/browser/lib/jimp';
-import { promiseTimeout } from '@vueuse/core';
 
 import { Empty } from 'ant-design-vue';
 import { LoadingOutlined } from '@ant-design/icons-vue';
@@ -38,7 +38,7 @@ const compare = async () => {
         const capture2 = selectedCaptures.value[1];
         const width = capture1.jimp.bitmap.width;
         const height = capture1.jimp.bitmap.height;
-        const jimp = new Jimp(width, height);
+        const jimp = new Jimp({ width, height, color: 0x000000 });
         jimp.scan(0, 0, width, height, (x, y, idx) => {
             const r1 = capture1.jimp.bitmap.data[idx + 0];
             const g1 = capture1.jimp.bitmap.data[idx + 1];
@@ -56,7 +56,7 @@ const compare = async () => {
                 jimp.setPixelColor(0xff0000ff, x, y);
             }
         });
-        const base64 = await jimp.getBase64Async(Jimp.MIME_PNG);
+        const base64 = await jimp.getBase64(JimpMime.png);
         comparedCaptureBase64.value = base64;
         loading.value = false;
     }

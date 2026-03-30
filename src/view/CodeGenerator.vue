@@ -6,11 +6,12 @@ import { message } from 'ant-design-vue';
 import {
     GenerateActions,
     useCodeStore,
-    readFileAsString,
+    readFileToText,
     defaultCode,
     AreaLtrb,
     ColorFormat,
-    type ICodeState,
+    type CodeState,
+    type CodeStateName,
 } from '../store/Code';
 import { useClipboard } from '../plugins/Clipboard';
 import ResetButtonVue from '../shared/ResetButton.vue';
@@ -21,9 +22,20 @@ import Opener from '../components/Opener.vue';
 const codeStore = useCodeStore();
 const clipboard = useClipboard();
 
-const flowNames = ['flow1', 'flow2', 'flow3', 'flow4', 'flow5', 'flow6', 'flow7', 'flow8', 'flow9', 'flow10'];
+const flowNames: CodeStateName[] = [
+    'flow1',
+    'flow2',
+    'flow3',
+    'flow4',
+    'flow5',
+    'flow6',
+    'flow7',
+    'flow8',
+    'flow9',
+    'flow10',
+];
 
-const codeModelRef = reactive<ICodeState>(Object.assign({}, codeStore.$state));
+const codeModelRef = reactive<CodeState>(Object.assign({}, codeStore.$state));
 const addingGenerateAction = ref<GenerateActions>(GenerateActions.Text);
 const addingTextActionText = ref<string>('');
 const addingPointxActionMode = ref<'指定点' | '自动填充点 N'>('自动填充点 N');
@@ -43,10 +55,10 @@ const addingRepeatActionToMode = ref<'指定结束' | '自动填充点列表长�
 const addingRepeatActionTo = ref<number>(1);
 const addingDeleteActionCount = ref<number>(1);
 const addingToStep = ref<number>(1);
-const activeFlowName = ref<string>('flow1');
+const activeFlowName = ref<CodeStateName>('flow1');
 const flowSteps = computed<string[][]>(() =>
     flowNames.map(flowName =>
-        codeModelRef[flowName as keyof ICodeState].map(step => {
+        codeModelRef[flowName].map(step => {
             switch (step.action) {
                 case GenerateActions.Text:
                     return `添加文本 ${step.text}`;
@@ -91,7 +103,7 @@ const flowSteps = computed<string[][]>(() =>
 );
 const codes = ref<string[]>([]);
 
-const handleClickAddStep = (flowName: string, toStep: number) => {
+const handleClickAddStep = (flowName: CodeStateName, toStep: number) => {
     switch (addingGenerateAction.value) {
         case GenerateActions.Text:
             codeStore.addStep(flowName, toStep, { action: GenerateActions.Text, text: addingTextActionText.value });
@@ -145,7 +157,7 @@ const handleClickAddStep = (flowName: string, toStep: number) => {
     addingToStep.value = flowSteps.value[flowi].length + 1;
 };
 
-const handleClickRemoveStep = (flowName: string, i: number) => {
+const handleClickRemoveStep = (flowName: CodeStateName, i: number) => {
     codeStore.removeStep(flowName, i);
 };
 
@@ -153,24 +165,24 @@ const handleClickCopyCode = (flowi: number) => {
     clipboard.copy(codes.value[flowi]);
 };
 
-const handleClickResetFlow = (flowName: string) => {
-    const defaultFlow = Array.from(defaultCode[flowName as keyof ICodeState]);
-    codeModelRef[flowName as keyof ICodeState] = defaultFlow;
+const handleClickResetFlow = (flowName: CodeStateName) => {
+    const defaultFlow = Array.from(defaultCode[flowName]);
+    codeModelRef[flowName] = defaultFlow;
     codeStore.resetFlow(flowName);
 };
 
 const handleClickImportFlow = async (it: any) => {
     const files = Array.from(it.target.files as FileList);
     const file = files[0];
-    const content = await readFileAsString(file);
+    const content = await readFileToText(file);
     const flow = JSON.parse(content);
-    Object.assign(codeModelRef[activeFlowName.value as keyof ICodeState], flow);
+    Object.assign(codeModelRef[activeFlowName.value], flow);
     codeStore.setFlow(activeFlowName.value, flow);
     it.target.value = null;
 };
 
 const handleClickExportFlow = () => {
-    const content = JSON.stringify(codeModelRef[activeFlowName.value as keyof ICodeState]);
+    const content = JSON.stringify(codeModelRef[activeFlowName.value]);
     const blob = new Blob([content], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');

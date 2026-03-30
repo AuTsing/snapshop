@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
+import { intToRGBA } from 'jimp';
 import { useConfigurationStore } from './Configuration';
 import { useCaptureStore } from './Capture';
-import Jimp from 'jimp/browser/lib/jimp';
 import { ColorMode } from './Configuration';
 
 export interface ICoordinateState {
@@ -20,7 +20,7 @@ export function displayColor(c: number, mode: ColorMode): string {
         case ColorMode.hexWithPound:
             return '#' + `000000${c.toString(16).slice(0, -2)}`.slice(-6);
         case ColorMode.rgb:
-            const rgba = Jimp.intToRGBA(c);
+            const rgba = intToRGBA(c);
             return `${rgba.r},${rgba.g},${rgba.b}`;
     }
 }
@@ -60,7 +60,7 @@ export const useCoordinateStore = defineStore('coordinate', {
                 if (x < 0 || y < 0) {
                     return false;
                 } else {
-                    const jimp: Jimp = capture.activeJimp;
+                    const jimp = capture.activeJimp;
                     if (!jimp || x > jimp.bitmap.width - 1 || y > jimp.bitmap.height - 1) {
                         return false;
                     } else {

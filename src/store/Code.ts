@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import Jimp from 'jimp/browser/lib/jimp';
+import { intToRGBA } from 'jimp';
 import { useRecordStore } from './Record';
 import { useAreaStore } from './Area';
 import { useStorage } from '../plugins/Storage';
@@ -83,20 +83,24 @@ export type DeleteGenerateStep = {
     count: number;
 };
 
-export interface ICodeState {
-    flow1: GenerateStep[];
-    flow2: GenerateStep[];
-    flow3: GenerateStep[];
-    flow4: GenerateStep[];
-    flow5: GenerateStep[];
-    flow6: GenerateStep[];
-    flow7: GenerateStep[];
-    flow8: GenerateStep[];
-    flow9: GenerateStep[];
-    flow10: GenerateStep[];
+export type GenerateFlow = GenerateStep[];
+
+export interface CodeState {
+    flow1: GenerateFlow;
+    flow2: GenerateFlow;
+    flow3: GenerateFlow;
+    flow4: GenerateFlow;
+    flow5: GenerateFlow;
+    flow6: GenerateFlow;
+    flow7: GenerateFlow;
+    flow8: GenerateFlow;
+    flow9: GenerateFlow;
+    flow10: GenerateFlow;
 }
 
-export const defaultCode: ICodeState = {
+export type CodeStateName = keyof CodeState;
+
+export const defaultCode: CodeState = {
     flow1: [
         { action: GenerateActions.Text, text: `{'undefined',{` },
         { action: GenerateActions.Text, text: `{` },
@@ -135,15 +139,20 @@ export const defaultCode: ICodeState = {
     flow10: [],
 };
 
-export function readFileAsString(file: File): Promise<string> {
-    return new Promise((resolve, reject) => {
+export async function readFileToText(file: File): Promise<string> {
+    const text = await new Promise<string>((resolve, reject) => {
         const reader = new FileReader();
         reader.onload = () => {
-            resolve(reader.result as string);
+            if (typeof reader.result === 'string') {
+                resolve(reader.result);
+            } else {
+                reject(`不支持的文件内容: ${reader.result}`);
+            }
         };
         reader.onerror = reject;
         reader.readAsText(file);
     });
+    return text;
 }
 
 export const useCodeStore = defineStore('code', {
@@ -163,24 +172,24 @@ export const useCodeStore = defineStore('code', {
         };
     },
     actions: {
-        setFlow(flowName: string, flow: GenerateStep[]) {
-            this[flowName as keyof ICodeState] = flow;
+        setFlow(flowName: CodeStateName, flow: GenerateFlow) {
+            this[flowName] = flow;
         },
-        resetFlow(flowName: string) {
-            const flow = Array.from(defaultCode[flowName as keyof ICodeState]);
-            this.setFlow(flowName, flow);
+        resetFlow(flowName: CodeStateName) {
+            const flow = Array.from(defaultCode[flowName]);
+            this[flowName] = flow;
         },
-        addStep(flowName: string, toStep: number, step: GenerateStep) {
-            this[flowName as keyof ICodeState].splice(toStep - 1, 0, step);
+        addStep(flowName: CodeStateName, toStep: number, step: GenerateStep) {
+            this[flowName].splice(toStep - 1, 0, step);
         },
-        removeStep(flowName: string, index: number) {
-            this[flowName as keyof ICodeState].splice(index, 1);
+        removeStep(flowName: CodeStateName, index: number) {
+            this[flowName].splice(index, 1);
         },
-        generate(flowName: string) {
+        generate(flowName: CodeStateName): string {
             const record = useRecordStore();
             const area = useAreaStore();
             const records = record.records.filter(record => record.cNative !== -1);
-            const flow = Array.from(this[flowName as keyof ICodeState] as GenerateStep[]);
+            const flow = Array.from(this[flowName]);
 
             for (const step of flow) {
                 if (step.action === GenerateActions.Repeat) {
@@ -222,10 +231,10 @@ export const useCodeStore = defineStore('code', {
                     case GenerateActions.Pointx:
                         if (step.index === 'n') {
                             code = code + '$p[n][x]';
-                        } else if (records[step.index - 1] === null) {
+                        } else if (records[step.index - 1] === undefined) {
                             code = code + `$p[${step.index}][x]`;
                         } else {
-                            if (records[step.deltaIndex - 1] !== null) {
+                            if (records[step.deltaIndex - 1] !== undefined) {
                                 code = code + (records[step.index - 1].x - records[step.deltaIndex - 1].x).toString();
                             } else {
                                 code = code + records[step.index - 1].x.toString();
@@ -236,10 +245,10 @@ export const useCodeStore = defineStore('code', {
                     case GenerateActions.Pointy:
                         if (step.index === 'n') {
                             code = code + '$p[n][x]';
-                        } else if (records[step.index - 1] === null) {
+                        } else if (records[step.index - 1] === undefined) {
                             code = code + `$p[${step.index}][y]`;
                         } else {
-                            if (records[step.deltaIndex - 1] !== null) {
+                            if (records[step.deltaIndex - 1] !== undefined) {
                                 code = code + (records[step.index - 1].y - records[step.deltaIndex - 1].y).toString();
                             } else {
                                 code = code + records[step.index - 1].y.toString();
@@ -250,7 +259,7 @@ export const useCodeStore = defineStore('code', {
                     case GenerateActions.Pointc:
                         if (step.index === 'n') {
                             code = code + '$p[n][c]';
-                        } else if (records[step.index - 1] === null) {
+                        } else if (records[step.index - 1] === undefined) {
                             code = code + `$p[${step.index}][c]`;
                         } else {
                             const cNative = records[step.index - 1].cNative;
@@ -266,7 +275,7 @@ export const useCodeStore = defineStore('code', {
                                     c = `000000${cNative.toString(16).slice(0, -2)}`.slice(-6).toUpperCase();
                                     break;
                                 case ColorFormat.Rgb:
-                                    const rgba = Jimp.intToRGBA(cNative);
+                                    const rgba = intToRGBA(cNative);
                                     c = `${rgba.r},${rgba.g},${rgba.b}`;
                                     break;
                                 default:

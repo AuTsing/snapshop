@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import Jimp from 'jimp/browser/lib/jimp';
+import { Jimp, JimpMime, type JimpInstance } from 'jimp';
 import Axios, { AxiosError } from 'axios';
 import { message } from 'ant-design-vue';
 
@@ -13,7 +13,7 @@ export interface ICaptureState {
 export interface ICapture {
     key: string;
     title: string;
-    jimp: Jimp;
+    jimp: JimpInstance;
     base64: string;
 }
 
@@ -27,8 +27,8 @@ export interface ResultCommand {
     data: { success: boolean; message: string };
 }
 
-export function readFileSync(file: File): Promise<ArrayBuffer> {
-    return new Promise((resolve, reject) => {
+async function readFromFile(file: File): Promise<ArrayBuffer> {
+    const ab = await new Promise<ArrayBuffer>((resolve, reject) => {
         const reader = new FileReader();
         reader.onload = () => {
             resolve(reader.result as ArrayBuffer);
@@ -36,23 +36,26 @@ export function readFileSync(file: File): Promise<ArrayBuffer> {
         reader.onerror = reject;
         reader.readAsArrayBuffer(file);
     });
+    return ab;
 }
 
-export async function readFileFromHttps(url: URL): Promise<ArrayBuffer> {
+async function readFromHttp(url: URL): Promise<ArrayBuffer> {
     try {
-        return (await Axios.get(url.href, { responseType: 'arraybuffer' })).data;
+        const resp = await Axios.get(url.href, { responseType: 'arraybuffer' });
+        const ab = resp.data;
+        return ab;
     } catch (e) {
-        if (e && (e as AxiosError).response) {
-            const buffer = (e as AxiosError<ArrayBuffer>).response?.data;
-            const msg = new TextDecoder().decode(buffer);
-            throw new Error(msg);
+        if (e instanceof AxiosError) {
+            const buffer = e.response?.data;
+            const message = new TextDecoder().decode(buffer);
+            throw new Error(message);
         } else {
             throw e;
         }
     }
 }
 
-export function readFileFromWs(url: URL): Promise<ArrayBuffer> {
+export function readFromWs(url: URL): Promise<ArrayBuffer> {
     return new Promise((resolve, reject) => {
         const wsc = new WebSocket(url.href);
         wsc.addEventListener('open', _ => {
@@ -110,12 +113,12 @@ export const useCaptureStore = defineStore('capture', {
         activeIndex(): number {
             return this.captures.findIndex(capture => capture.key === this.activeKey);
         },
-        activeJimp(): Jimp {
+        activeJimp(): JimpInstance {
             return this.captures.find(capture => capture.key === this.activeKey)!.jimp;
         },
     },
     actions: {
-        setCapture(jimp: Jimp, base64: string, key?: string) {
+        setCapture(jimp: JimpInstance, base64: string, key?: string) {
             key = key ?? this.activeKey;
             const index = this.captures.findIndex(capture => capture.key === key);
             if (index > -1) {
@@ -129,7 +132,7 @@ export const useCaptureStore = defineStore('capture', {
                 this.captures = [];
             }
         },
-        addCapture(jimp: Jimp, base64: string) {
+        addCapture(jimp: JimpInstance, base64: string) {
             const capture: ICapture = {
                 key: `tab${this.tabIndex}`,
                 title: `图片${this.tabIndex}`,
@@ -140,27 +143,23 @@ export const useCaptureStore = defineStore('capture', {
             this.captures.push(capture);
             return capture;
         },
-        async addCaptureFromLink(link: string) {
+        async addCaptureFromLink(link: string): Promise<string> {
             try {
                 const url = new URL(link);
                 let arrayBuffer: ArrayBuffer;
                 if (url.protocol === 'http:' || url.protocol === 'https:') {
-                    arrayBuffer = await readFileFromHttps(url);
+                    arrayBuffer = await readFromHttp(url);
                 } else if (url.protocol === 'ws:') {
-                    arrayBuffer = await readFileFromWs(url);
+                    arrayBuffer = await readFromWs(url);
                 } else {
                     throw new Error('不支持的接口协议 ' + url.protocol);
                 }
                 const jimp = await Jimp.read(arrayBuffer);
-                const base64 = await jimp.getBase64Async(Jimp.MIME_PNG);
-                const capture = this.addCapture(jimp, base64);
+                const base64 = await jimp.getBase64(JimpMime.png);
+                const capture = this.addCapture(jimp as JimpInstance, base64);
                 return capture.key;
             } catch (e) {
-                if (e && (e as AxiosError).response) {
-                    const buffer = (e as AxiosError<ArrayBuffer>).response?.data;
-                    const msg = new TextDecoder().decode(buffer);
-                    message.error('加载图片失败: ' + msg);
-                } else if (e instanceof Error) {
+                if (e instanceof Error) {
                     message.error('加载图片失败: ' + e.message);
                 } else {
                     message.error('加载图片失败: 未知错误');
@@ -168,40 +167,29 @@ export const useCaptureStore = defineStore('capture', {
                 return this.activeKey;
             }
         },
-        async addCaptureFromFile(file: File) {
-            const buffer = await readFileSync(file);
-            const jimp = await Jimp.read(buffer);
-            const base64 = await jimp.getBase64Async(Jimp.MIME_PNG);
-            const capture = this.addCapture(jimp, base64);
-            return capture.key;
+        async addCaptureFromFile(file: File): Promise<string> {
+            try {
+                const ab = await readFromFile(file);
+                const jimp = await Jimp.read(ab);
+                const base64 = await jimp.getBase64(JimpMime.png);
+                const capture = this.addCapture(jimp as JimpInstance, base64);
+                return capture.key;
+            } catch (e) {
+                if (e instanceof Error) {
+                    message.error('加载图片失败: ' + e.message);
+                } else {
+                    message.error('加载图片失败: 未知错误');
+                }
+                return this.activeKey;
+            }
         },
         async rotateCapture() {
             const activeJimp = this.activeJimp;
 
-            const bData = activeJimp.bitmap.data;
-            const bDataLength = bData.length;
-            const dstBuffer = new ArrayBuffer(bDataLength);
-            const dstView = new DataView(dstBuffer);
+            const rotatedJimp = activeJimp.rotate(-90);
+            const rotatedBase64 = await rotatedJimp.getBase64(JimpMime.png);
 
-            const w = activeJimp.bitmap.width;
-            const h = activeJimp.bitmap.height;
-            const dstOffsetStep = 4;
-
-            let dstOffset = 0;
-            for (let x = 0; x < w; x++) {
-                for (let y = h - 1; y >= 0; y--) {
-                    dstView.setUint32(dstOffset, bData.readUInt32BE((w * y + x) << 2));
-                    dstOffset += dstOffsetStep;
-                }
-            }
-
-            activeJimp.bitmap.width = h;
-            activeJimp.bitmap.height = w;
-            activeJimp.bitmap.data = dstBuffer;
-
-            const base64 = await activeJimp.getBase64Async(Jimp.MIME_PNG);
-
-            this.setCapture(activeJimp, base64);
+            this.setCapture(rotatedJimp as JimpInstance, rotatedBase64);
         },
     },
 });
