@@ -1,26 +1,26 @@
 import { type App, type Plugin, inject } from 'vue';
 
 export const VscodeMessageCommand = {
-    getItem: 'getItem',
-    setItem: 'setItem',
+    GetItem: 'GetItem',
+    SetItem: 'SetItem',
 } as const;
 
 export type VscodeMessageCommand = (typeof VscodeMessageCommand)[keyof typeof VscodeMessageCommand];
 
 export interface VscodeMessage {
     command: VscodeMessageCommand;
-    data: { key: string; value?: unknown };
+    data: { key: string; value?: string };
+}
+
+export interface VsCodeApi {
+    getState: () => { [key: string]: string } | undefined;
+    setState: (value: { [key: string]: string }) => void;
+    postMessage: (message: VscodeMessage) => void;
 }
 
 declare function acquireVsCodeApi(): VsCodeApi;
 
-export interface VsCodeApi {
-    setState: (newState: unknown) => void;
-    getState: () => unknown;
-    postMessage: (message: VscodeMessage) => void;
-}
-
-export class Vscode {
+export class Vscode implements VsCodeApi {
     private static instance: Vscode;
 
     static getInstance() {
@@ -30,14 +30,14 @@ export class Vscode {
         return Vscode.instance;
     }
 
-    readonly setState: VsCodeApi['setState'];
-    readonly getState: VsCodeApi['getState'];
-    readonly postMessage: VsCodeApi['postMessage'];
+    getState: () => { [key: string]: string } | undefined;
+    setState: (value: { [key: string]: string }) => void;
+    postMessage: (message: VscodeMessage) => void;
 
     private constructor() {
         const vscode = acquireVsCodeApi();
-        this.setState = vscode.setState;
         this.getState = vscode.getState;
+        this.setState = vscode.setState;
         this.postMessage = vscode.postMessage;
     }
 }
