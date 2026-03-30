@@ -186,10 +186,29 @@ export const useCaptureStore = defineStore('capture', {
         async rotateCapture() {
             const activeJimp = this.activeJimp;
 
-            const rotatedJimp = activeJimp.rotate(-90);
-            const rotatedBase64 = await rotatedJimp.getBase64Async(Jimp.MIME_PNG);
+            const bData = activeJimp.bitmap.data;
+            const bDataLength = bData.length;
+            const dstBuffer = new ArrayBuffer(bDataLength);
+            const dstView = new DataView(dstBuffer);
 
-            this.setCapture(rotatedJimp, rotatedBase64);
+            const w = activeJimp.bitmap.width;
+            const h = activeJimp.bitmap.height;
+            const dstOffsetStep = 4;
+
+            let dstOffset = 0;
+            for (let x = 0; x < w; x++) {
+                for (let y = h - 1; y >= 0; y--) {
+                    dstView.setUint32(dstOffset, bData.readUInt32BE((w * y + x) << 2));
+                    dstOffset += dstOffsetStep;
+                }
+            }
+
+            activeJimp.bitmap.width = h;
+            activeJimp.bitmap.height = w;
+            activeJimp.bitmap.data = dstBuffer;
+            const rotatedBase64 = await activeJimp.getBase64Async(Jimp.MIME_PNG);
+
+            this.setCapture(activeJimp, rotatedBase64);
         },
     },
 });
