@@ -25,7 +25,7 @@ export const useLoadCaptureApiStore = defineStore('loadCaptureApi', {
             return title => {
                 const api = apis.find(api => api.title === title);
                 if (api) {
-                    return api.url + '/snap';
+                    return api.url;
                 } else {
                     return '';
                 }
