@@ -1,35 +1,33 @@
 import { promiseTimeout } from '@vueuse/core';
-import Axios from 'axios';
 
-(async () => {
-    const axios = Axios.create({ timeout: 5000 });
+interface Api {
+    title: string;
+    url: string;
+}
 
-    let port = 26000;
-    let urls = Array.from(Array(10), () => port++).map(port => `http://localhost:${++port}/api`);
-    for (let i = 0; i < 5; i++) {
-        urls.forEach(url => {
-            axios
-                .get(url + '/ping')
-                .then(resp => {
-                    if (resp.data === 'pong') {
-                        return axios.get(url + '/title');
-                    } else {
-                        throw new Error('no pong');
-                    }
-                })
-                .then(resp => {
-                    if (resp.data) {
-                        const title = resp.data;
-                        self.postMessage({ title, url });
-                    }
-                })
-                .then(() => (urls = urls.filter(u => u !== url)))
-                .catch((_e: Error) => {});
-        });
-        await promiseTimeout(1000);
+const port = 26000;
+const urls = Array.from(Array(10), (_, i) => port + i).map(port => `http://localhost:${port}/get-api`);
+
+for (const url of urls) {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 1000);
+    try {
+        const resp = await fetch(url, { signal: controller.signal });
+        if (!resp.ok) {
+            throw Error(`Http failed: ${resp.status}`);
+        }
+        const api = (await resp.json()) as Api;
+        self.postMessage(api);
+    } catch (e) {
+        if (e instanceof Error && e.name === 'AbortError') {
+        } else {
+            console.error(e);
+        }
+    } finally {
+        clearTimeout(timeout);
     }
-    await promiseTimeout(5000);
+}
 
-    self.postMessage('done');
-    self.close();
-})();
+await promiseTimeout(1000);
+self.postMessage('done');
+self.close();

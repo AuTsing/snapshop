@@ -42,6 +42,7 @@ export const useLoadCaptureApiStore = defineStore('loadCaptureApi', {
         loadApis() {
             this.loadedApis = true;
             this.loadingApis = true;
+
             const apiSearcher = new ApiSearcher();
             apiSearcher.onmessage = ev => {
                 if (ev.data === 'done') {

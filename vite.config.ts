@@ -12,4 +12,10 @@ export default defineConfig({
             resolvers: [AntDesignVueResolver({ importStyle: false })],
         }),
     ],
+    worker: {
+        format: 'es',
+    },
+    build: {
+        chunkSizeWarningLimit: 2000,
+    },
 });
