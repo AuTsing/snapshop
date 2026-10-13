@@ -1,6 +1,5 @@
 import { defineStore } from 'pinia';
 import Jimp from 'jimp/browser/lib/jimp';
-import Axios, { AxiosError } from 'axios';
 import { message } from 'ant-design-vue';
 import { encode } from 'cbor-x/encode';
 import { decode } from 'cbor-x/decode';
@@ -85,17 +84,11 @@ async function readFromFile(file: File): Promise<ArrayBuffer> {
 
 async function readFromHttp(url: URL): Promise<ArrayBuffer> {
     try {
-        const resp = await Axios.get(url.href, { responseType: 'arraybuffer' });
-        const ab = resp.data;
+        const resp = await fetch(url);
+        const ab = await resp.arrayBuffer();
         return ab;
     } catch (e) {
-        if (e instanceof AxiosError) {
-            const buffer = e.response?.data;
-            const message = new TextDecoder().decode(buffer);
-            throw new Error(message);
-        } else {
-            throw e;
-        }
+        throw e;
     }
 }
 
