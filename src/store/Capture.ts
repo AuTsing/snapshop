@@ -79,17 +79,15 @@ async function readFromFile(file: File): Promise<ArrayBuffer> {
         reader.onerror = reject;
         reader.readAsArrayBuffer(file);
     });
+
     return ab;
 }
 
 async function readFromHttp(url: URL): Promise<ArrayBuffer> {
-    try {
-        const resp = await fetch(url);
-        const ab = await resp.arrayBuffer();
-        return ab;
-    } catch (e) {
-        throw e;
-    }
+    const resp = await fetch(url);
+    const ab = await resp.arrayBuffer();
+
+    return ab;
 }
 
 function createDeferred<T>(): [Promise<T>, (value: T | PromiseLike<T>) => void, (reason?: any) => void] {
