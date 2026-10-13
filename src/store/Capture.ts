@@ -74,7 +74,11 @@ async function readFromFile(file: File): Promise<ArrayBuffer> {
     const ab = await new Promise<ArrayBuffer>((resolve, reject) => {
         const reader = new FileReader();
         reader.onload = () => {
-            resolve(reader.result as ArrayBuffer);
+            if (reader.result instanceof ArrayBuffer) {
+                resolve(reader.result);
+            } else {
+                reject('图片格式不正确');
+            }
         };
         reader.onerror = reject;
         reader.readAsArrayBuffer(file);
