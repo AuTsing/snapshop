@@ -1,6 +1,5 @@
 import { defineStore } from 'pinia';
-
-import ApiSearcher from '../workers/ApiSearcher?worker&inline';
+import { discover } from '../workers/discover_api';
 
 export interface ILoadCaptureApi {
     title: string;
@@ -43,18 +42,18 @@ export const useLoadCaptureApiStore = defineStore('loadCaptureApi', {
             this.loadedApis = true;
             this.loadingApis = true;
 
-            const apiSearcher = new ApiSearcher();
-            apiSearcher.onmessage = ev => {
-                if (ev.data === 'done') {
-                    this.loadingApis = false;
-                    return;
-                }
-
-                if (ev.data.title && ev.data.url) {
-                    this.addApi(ev.data.title, ev.data.url);
-                    return;
-                }
-            };
+            Promise.allSettled(
+                [26000, 26001, 26002]
+                    .map(port => `http://localhost:${port}/get-api`)
+                    .map(async it => {
+                        const r = await discover(it);
+                        if (r !== null) {
+                            this.addApi(r.title, r.url);
+                        }
+                    }),
+            ).then(() => {
+                this.loadingApis = false;
+            });
         },
     },
 });
